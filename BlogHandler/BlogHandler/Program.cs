@@ -12,32 +12,37 @@ namespace BlogHandler
         private const string _address = @"https://localhost:44304/";
         private const string _filePath = "results.txt";
         private static readonly (int, int) _idRange = (4, 13);
-        private static HttpClient _client;
         private static List<string> _posts;
 
         static void Main(string[] args)
         {
-            Init();
-            for (int startId = _idRange.Item1, endId = _idRange.Item2; startId <= endId; startId++)
-            {
-                _posts.Add(Parse(GetPostAsync(startId).Result) + "\n\n");
-            }
-            SavePosts(_posts);
-        }
-        private static void Init()
-        {
             _posts = new List<string>(_idRange.Item2 - _idRange.Item1 + 1);
-            _client = new HttpClient()
+            Task<string>[] tasks = new Task<string>[_posts.Capacity];
+
+            for (int i = 0, startId = _idRange.Item1, endId = _idRange.Item2; startId <= endId; startId++, i++)
             {
-                BaseAddress = new Uri(_address)
-            };
+                tasks[i] = Task.Run(() => GetPostAsync(startId));
+            }
+
+            Task.WaitAll(tasks);
+
+            for(int i = 0; i < tasks.Length; i++)
+            {
+                _posts[i] = Parse(tasks[i].Result) + "\n\n";
+            }
+
+            SavePosts(_posts);
         }
         private static async Task<string> GetPostAsync(int id)
         {
+            using var client = new HttpClient()
+            {
+                BaseAddress = new Uri(_address)
+            };
             string response = string.Empty;
             try
             {
-                response = await _client.GetStringAsync($"posts/{id}");
+                response = await client.GetStringAsync($"posts/{id}");
             }
             catch (HttpRequestException e)
             {
