@@ -2,54 +2,91 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using Timesheets.Api.Models;
+using Timesheets.Data.Models;
+using Timesheets.BusinessLogic;
 
 namespace Timesheets.Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class PersonsController : ControllerBase
+    public sealed class PersonsController : ControllerBase
     {
-        [HttpGet]
-        [Route("/{id}")]
-        public Task<ActionResult<Person>> Get ([FromRoute] int id, CancellationToken token)
+        private readonly PersonsService _personsService;
+
+        public PersonsController()
         {
-            return null;
+            _personsService = new PersonsService();
+        }
+
+        [HttpGet()]
+        [Route("{id}")]
+        public async Task<ActionResult<Person>> GetAsync([FromRoute] int id, CancellationToken token)
+        {
+            var searchTask = Task.Run(() => _personsService.SearchAsync(id, token));
+
+            searchTask.Wait();
+            if (searchTask.Result == null)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return Ok(searchTask.Result);
+            }
         }
 
         [HttpGet]
-        [Route("/search")]
-        public Task<ActionResult<Person>> Get ([FromQuery] string searchTerm, CancellationToken token)
+        [Route("search")]
+        public async Task<ActionResult<Person>> GetAsync ([FromQuery] string searchTerm, CancellationToken token)
         {
-            return null;
+            var result = await Task.Run(() => _personsService.SearchAsync(searchTerm, token));
+            if (result == null)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return Ok(result);
+            }
         }
 
         [HttpGet]
-        public Task<ActionResult<IEnumerable<Person>>> GetRange (
+        public async Task<ActionResult<IEnumerable<Person>>> GetRangeAsync(
             [FromQuery] int skip, 
             [FromQuery] int take, 
             CancellationToken token)
         {
-            return null;
+            var result = await Task.Run(() => _personsService.GetRangeAsync(skip, take, token));
+            if (result == null)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return Ok(result);
+            }
         }
             
         [HttpPost]
-        public Task<ActionResult> Add ([FromBody] Person person, CancellationToken token)
+        public async Task<ActionResult> CreateAsync ([FromBody] Person person, CancellationToken token)
         {
-            return null;
+            var result = await Task.Run(() => _personsService.CreateAsync(person, token));
+            return Ok(result);
         }
 
         [HttpPut]
-        public Task<ActionResult> Update ([FromBody] Person person, CancellationToken token)
+        public async Task<ActionResult> UpdateByIdAsync ([FromBody] Person person, CancellationToken token)
         {
-            return null;
+            await _personsService.UpdateByIdAsync(person.Id, person, token);
+            return Ok();
         }
 
         [HttpDelete]
-        [Route("/{id}")]
-        public Task<ActionResult> Delete ([FromRoute] int id, CancellationToken token)
+        [Route("{id}")]
+        public async Task<ActionResult<bool>> Delete ([FromRoute] int id, CancellationToken token)
         {
-            return null;
+            var result = await Task.Run(() => _personsService.DeleteAsync(id, token));
+            return Ok(result);
         }
     }
 }
