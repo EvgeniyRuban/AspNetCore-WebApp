@@ -2,8 +2,9 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using Timesheets.Data.Models;
-using Timesheets.BusinessLogic;
+using Timesheets.Core.Repositories;
+using Timesheets.Core.Services;
+using Timesheets.Core.Models;
 
 namespace Timesheets.Api.Controllers
 {
@@ -11,43 +12,27 @@ namespace Timesheets.Api.Controllers
     [Route("[controller]")]
     public sealed class PersonsController : ControllerBase
     {
-        private readonly PersonsService _personsService;
+        private readonly IPersonsService _personsService;
 
-        public PersonsController()
+        public PersonsController(IPersonsService personsService)
         {
-            _personsService = new PersonsService();
+            _personsService = personsService;
         }
 
-        [HttpGet()]
+        [HttpGet]
         [Route("{id}")]
         public async Task<ActionResult<Person>> GetAsync([FromRoute] int id, CancellationToken token)
         {
-            var searchTask = Task.Run(() => _personsService.SearchAsync(id, token));
-
-            searchTask.Wait();
-            if (searchTask.Result == null)
-            {
-                return NoContent();
-            }
-            else
-            {
-                return Ok(searchTask.Result);
-            }
+            var result = await _personsService.GetAsync(id, token);
+            return Ok(result);
         }
 
         [HttpGet]
         [Route("search")]
-        public async Task<ActionResult<Person>> GetAsync ([FromQuery] string searchTerm, CancellationToken token)
+        public async Task<ActionResult<Person>> GetAsync ([FromQuery] string firstName, CancellationToken token)
         {
-            var result = await Task.Run(() => _personsService.SearchAsync(searchTerm, token));
-            if (result == null)
-            {
-                return NoContent();
-            }
-            else
-            {
-                return Ok(result);
-            }
+            var result = await _personsService.GetAsync(firstName, token);
+            return Ok(result);
         }
 
         [HttpGet]
@@ -56,36 +41,32 @@ namespace Timesheets.Api.Controllers
             [FromQuery] int take, 
             CancellationToken token)
         {
-            var result = await Task.Run(() => _personsService.GetRangeAsync(skip, take, token));
-            if (result == null)
-            {
-                return NoContent();
-            }
-            else
-            {
-                return Ok(result);
-            }
+            var result = await _personsService.GetRangeAsync(skip, take, token);
+            return Ok(result);
         }
             
         [HttpPost]
-        public async Task<ActionResult> CreateAsync ([FromBody] Person person, CancellationToken token)
+        public async Task<ActionResult> AddAsync ([FromBody] Person person, CancellationToken token)
         {
-            var result = await Task.Run(() => _personsService.CreateAsync(person, token));
-            return Ok(result);
+            await _personsService.AddAsync(person, token);
+            return Ok();
         }
 
         [HttpPut]
-        public async Task<ActionResult> UpdateByIdAsync ([FromBody] Person person, CancellationToken token)
+        public async Task<ActionResult> UpdateAsync (
+            [FromQuery] int targetPersonId, 
+            [FromBody] Person newPerson,
+            CancellationToken token)
         {
-            await _personsService.UpdateByIdAsync(person.Id, person, token);
+            await _personsService.UpdateAsync(newPerson, token);
             return Ok();
         }
 
         [HttpDelete]
         [Route("{id}")]
-        public async Task<ActionResult<bool>> Delete ([FromRoute] int id, CancellationToken token)
+        public async Task<ActionResult<bool>> RemoveAsync ([FromRoute] int id, CancellationToken token)
         {
-            var result = await Task.Run(() => _personsService.DeleteAsync(id, token));
+            var result = await _personsService.RemoveAsync(id, token);
             return Ok(result);
         }
     }

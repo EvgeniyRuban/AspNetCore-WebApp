@@ -1,11 +1,15 @@
 ﻿using System.Collections.Generic;
-using Timesheets.Data.Models;
+using System.Threading;
+using System.Threading.Tasks;
+using Timesheets.Core.Models;
+using Timesheets.Core.Repositories;
+using System.Linq;
 
 namespace Timesheets.Data
 {
-    public static class Repository
+    public class PersonsRepository : IPersonsRepository
     {
-        public static List<Person> Persons => new List<Person>
+        private List<Person> _persons => new List<Person>
         {
             new Person { Id = 1, FirstName = "Veda", LastName = "Richmond", Email = "ligula@necluctus.edu", Company = "Quisque Ac Libero LLP", Age = 42 },
             new Person { Id = 2, FirstName = "Demetria", LastName = "Andrews", Email = "feugiat.metus@penatibuset.org", Company = "Nulla Facilisi Foundation", Age = 31 },
@@ -58,5 +62,50 @@ namespace Timesheets.Data
             new Person { Id = 49, FirstName = "Jenette", LastName = "Dejesus", Email = "adipiscing.Mauris.molestie@liberoduinec.ca", Company = "Lectus Justo Incorporated", Age = 56 },
             new Person { Id = 50, FirstName = "Ramona", LastName = "Gilliam", Email = "massa.Vestibulum@lectuspede.ca", Company = "Imperdiet Dictum LLP", Age = 24 },
         };
+
+        public async Task<Person> GetAsync(int id, CancellationToken token)
+        {
+            return await Task.Run(() => _persons.Find(i => i.Id == id), token);
+        }
+        public async Task<Person> GetAsync(string name, CancellationToken token)
+        {
+            return await Task.Run(() => _persons.Find(i => i.FirstName == name), token);
+        }
+        public async Task<IReadOnlyCollection<Person>> GetRangeAsync(
+            int startIndex, 
+            int takeCount, 
+            CancellationToken token)
+        {
+            return await Task.Run(() =>
+            {
+                return _persons.FindAll(i => _persons.IndexOf(i) >= startIndex && _persons.IndexOf(i) < takeCount + startIndex);
+            }, token);
+        }
+        public async Task AddAsync(Person newPerson, CancellationToken token)
+        {
+            await Task.Run(() => _persons.Add(newPerson), token);
+        }
+        public async Task UpdateAsync(Person newPerson, CancellationToken token)
+        {
+            await Task.Run(() =>
+            {
+                var personToUpdate = _persons.First(p => p.Id == newPerson.Id);
+                if (personToUpdate != null)
+                {
+                    personToUpdate.FirstName = newPerson.FirstName;
+                    personToUpdate.LastName = newPerson.LastName;
+                    personToUpdate.Company = newPerson.Company;
+                    personToUpdate.Age = newPerson.Age;
+                    personToUpdate.Email = newPerson.Email;
+                }
+            }, token);
+        }
+        public async Task<bool> RemoveAsync(int id, CancellationToken token)
+        {
+            return await Task.Run(() => 
+            {
+               return _persons.Remove(_persons.Find(p => p.Id == id));
+            }, token);
+        }
     }
 }

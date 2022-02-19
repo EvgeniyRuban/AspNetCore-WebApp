@@ -4,6 +4,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Timesheets.Core.Repositories;
+using Timesheets.Core.Services;
+using Timesheets.Data;
+using Timesheets.BusinessLogic;
 
 namespace Timesheets.Api
 {
@@ -18,11 +22,14 @@ namespace Timesheets.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
+            
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Timesheets API", Version = "v1" });
             });
+            services.AddSingleton<IPersonsRepository, PersonsRepository>();
+            services.AddSingleton<IPersonsService, PersonsService>();
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {

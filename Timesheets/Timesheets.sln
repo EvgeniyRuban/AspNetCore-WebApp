@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Timesheets.BusinessLogic", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Timesheets.Data", "Timesheets.Data\Timesheets.Data.csproj", "{9DFBEFA4-81D4-4A6A-9A43-E9C4DF27ADBE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Timesheets.Core", "Timesheets.Core\Timesheets.Core.csproj", "{914ACC68-5D2F-4ED6-BC2C-7EF1E5D6968E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{9DFBEFA4-81D4-4A6A-9A43-E9C4DF27ADBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9DFBEFA4-81D4-4A6A-9A43-E9C4DF27ADBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9DFBEFA4-81D4-4A6A-9A43-E9C4DF27ADBE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{914ACC68-5D2F-4ED6-BC2C-7EF1E5D6968E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{914ACC68-5D2F-4ED6-BC2C-7EF1E5D6968E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{914ACC68-5D2F-4ED6-BC2C-7EF1E5D6968E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{914ACC68-5D2F-4ED6-BC2C-7EF1E5D6968E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

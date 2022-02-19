@@ -1,4 +1,4 @@
-﻿namespace Timesheets.Data.Models
+﻿namespace Timesheets.Core.Models
 {
     public class Person
     {

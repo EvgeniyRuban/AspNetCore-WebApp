@@ -1,82 +1,34 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using System.Threading;
 using System.Collections.Generic;
-using Timesheets.Data;
-using Timesheets.Data.Models;
+using Timesheets.Core.Services;
+using Timesheets.Core.Repositories;
+using Timesheets.Core.Models;
 
 namespace Timesheets.BusinessLogic
 {
-    public class PersonsService
+    public class PersonsService : IPersonsService
     {
-        public async Task<IEnumerable<Person>> GetRangeAsync(int startIndex, int count, CancellationToken token)
-        {
-            return await Task.Run(() =>
-            {
-                if(token.IsCancellationRequested)
-                {
-                    return null;
-                }
-                return Repository.Persons.GetRange(startIndex, count);
-            });
-        }
-        public async Task<Person> CreateAsync(Person person, CancellationToken token)
-        {
-            return await Task.Run(() => 
-            {
-                if(token.IsCancellationRequested)
-                {
-                    return null;
-                }
-                Repository.Persons.Add(person);
-                return person;
-            });
-        }
-        public async Task<Person> SearchAsync(int id, CancellationToken token)
-        {
-            return await Task.Run(() =>
-            {
-                foreach (var person in Repository.Persons)
-                {
-                    if (token.IsCancellationRequested)
-                    {
-                        break;
-                    }
-                    if (person.Id == id)
-                    {
-                        return person;
-                    }
-                }
+        private readonly IPersonsRepository _personsRepository;
 
-                return null;
-            });
-        }
-        public async Task<Person> SearchAsync(string name, CancellationToken token)
+        public PersonsService(IPersonsRepository personsRepository)
         {
-            return await Task.Run(() =>
-            {
-                foreach (var person in Repository.Persons)
-                {
-                    if (token.IsCancellationRequested)
-                    {
-                        break;
-                    }
-                    if (person.FirstName == name)
-                    {
-                        return person;
-                    }
-                }
+            _personsRepository = personsRepository;
+        }
 
-                return null;
-            });
-        }
-        public async Task UpdateByIdAsync(int id, Person newPerson, CancellationToken token)
-        {
-            var person = await SearchAsync(id, token);
-            person = newPerson;
-        }
-        public async Task<bool> DeleteAsync(int id, CancellationToken token)
-        {
-            return Repository.Persons.Remove(await SearchAsync(id, token));
-        }
+        public async Task<Person> GetAsync(int id, CancellationToken token) => await _personsRepository.GetAsync(id, token); 
+
+        public async Task<Person> GetAsync(string firstName, CancellationToken token) 
+            => await _personsRepository.GetAsync(firstName, token);
+
+        public async Task<IReadOnlyCollection<Person>> GetRangeAsync(int skip, int takeCount, CancellationToken token)
+        => await _personsRepository.GetRangeAsync(skip, takeCount, token);
+
+        public async Task AddAsync(Person person, CancellationToken token) => await _personsRepository.AddAsync(person, token);
+
+        public async Task<bool> RemoveAsync(int id, CancellationToken token) => await _personsRepository.RemoveAsync(id, token);
+
+        public async Task UpdateAsync(Person newPerson, CancellationToken token) 
+            => await _personsRepository.UpdateAsync(newPerson, token);
     }
 }

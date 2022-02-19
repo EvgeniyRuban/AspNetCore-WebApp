@@ -10,6 +10,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Timesheets.BusinessLogic\Timesheets.BusinessLogic.csproj" />
+    <ProjectReference Include="..\Timesheets.Core\Timesheets.Core.csproj" />
+    <ProjectReference Include="..\Timesheets.Data\Timesheets.Data.csproj" />
   </ItemGroup>
 
 

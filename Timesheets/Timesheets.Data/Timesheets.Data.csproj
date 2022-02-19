@@ -4,4 +4,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Timesheets.Core\Timesheets.Core.csproj" />
+  </ItemGroup>
+
 </Project>
