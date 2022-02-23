@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Timesheets.Core.Models;
 using Timesheets.Core.Repositories;
-using System.Linq;
+
 
 namespace Timesheets.Data
 {
@@ -67,13 +69,22 @@ namespace Timesheets.Data
         {
             return await Task.Run(() => _persons.Find(i => i.Id == id), token);
         }
-        public async Task<Person> GetAsync(string name, CancellationToken token)
+        public async Task<Person> GetAsync(Person term, CancellationToken token)
         {
-            return await Task.Run(() => _persons.Find(i => i.FirstName == name), token);
+            return await Task.Run(() =>
+            {
+
+                return _persons.Find(i => 
+                    i.FirstName == term.FirstName
+                    || i.LastName == term.LastName
+                    || i.Email == term.Email
+                    || i.Company == term.Company
+                    || i.Age == term.Age);
+            }, token);
         }
         public async Task<IReadOnlyCollection<Person>> GetRangeAsync(
-            int startIndex, 
-            int takeCount, 
+            int startIndex,
+            int takeCount,
             CancellationToken token)
         {
             return await Task.Run(() =>
@@ -81,22 +92,41 @@ namespace Timesheets.Data
                 return _persons.FindAll(i => _persons.IndexOf(i) >= startIndex && _persons.IndexOf(i) < takeCount + startIndex);
             }, token);
         }
-        public async Task AddAsync(Person newPerson, CancellationToken token)
+        public async Task<bool> AddAsync(Person newPerson, CancellationToken token)
         {
-            await Task.Run(() => _persons.Add(newPerson), token);
-        }
-        public async Task UpdateAsync(Person newPerson, CancellationToken token)
-        {
-            await Task.Run(() =>
+            return await Task.Run(() =>
             {
-                var personToUpdate = _persons.First(p => p.Id == newPerson.Id);
-                if (personToUpdate != null)
+                
+                if (GetAsync(newPerson.Id, token).Result == null)
                 {
-                    personToUpdate.FirstName = newPerson.FirstName;
-                    personToUpdate.LastName = newPerson.LastName;
-                    personToUpdate.Company = newPerson.Company;
-                    personToUpdate.Age = newPerson.Age;
-                    personToUpdate.Email = newPerson.Email;
+                    _persons.Add(newPerson);
+                    return true;
+                }
+
+                return false;
+
+            }, token);
+        }
+        public async Task<bool> TryUpdateAsync(Person newPerson, CancellationToken token)
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    var personToUpdate = _persons.First(p => p.Id == newPerson.Id);
+                    if (personToUpdate != null)
+                    {
+                        personToUpdate.FirstName = newPerson.FirstName;
+                        personToUpdate.LastName = newPerson.LastName;
+                        personToUpdate.Company = newPerson.Company;
+                        personToUpdate.Age = newPerson.Age;
+                        personToUpdate.Email = newPerson.Email;
+                    }
+                    return true;
+                }
+                catch (InvalidOperationException)
+                {
+                    return false;
                 }
             }, token);
         }
@@ -104,7 +134,12 @@ namespace Timesheets.Data
         {
             return await Task.Run(() => 
             {
-               return _persons.Remove(_persons.Find(p => p.Id == id));
+                var result = _persons.Find(p => p.Id == id);
+                if (result != null)
+                {
+                    return _persons.Remove(result);
+                }
+                return false;
             }, token);
         }
     }

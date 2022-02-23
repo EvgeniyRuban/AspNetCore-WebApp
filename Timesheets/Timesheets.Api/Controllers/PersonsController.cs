@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using Timesheets.Core.Repositories;
 using Timesheets.Core.Services;
 using Timesheets.Core.Models;
 
@@ -24,15 +23,15 @@ namespace Timesheets.Api.Controllers
         public async Task<ActionResult<Person>> GetAsync([FromRoute] int id, CancellationToken token)
         {
             var result = await _personsService.GetAsync(id, token);
-            return Ok(result);
+            return result != null ? Ok(result) : (ActionResult)NoContent();
         }
 
         [HttpGet]
         [Route("search")]
-        public async Task<ActionResult<Person>> GetAsync ([FromQuery] string firstName, CancellationToken token)
+        public async Task<ActionResult<Person>> GetAsync ([FromQuery] Person term, CancellationToken token)
         {
-            var result = await _personsService.GetAsync(firstName, token);
-            return Ok(result);
+            var result = await _personsService.GetAsync(term, token);
+            return result != null ? Ok(result) : (ActionResult)NoContent();
         }
 
         [HttpGet]
@@ -42,7 +41,7 @@ namespace Timesheets.Api.Controllers
             CancellationToken token)
         {
             var result = await _personsService.GetRangeAsync(skip, take, token);
-            return Ok(result);
+            return result != null ? Ok(result) : (ActionResult)NoContent();
         }
             
         [HttpPost]
@@ -53,8 +52,7 @@ namespace Timesheets.Api.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult> UpdateAsync (
-            [FromQuery] int targetPersonId, 
+        public async Task<ActionResult> UpdateAsync ( 
             [FromBody] Person newPerson,
             CancellationToken token)
         {

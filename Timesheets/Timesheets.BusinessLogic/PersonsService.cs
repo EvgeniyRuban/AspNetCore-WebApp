@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
 using Timesheets.Core.Services;
@@ -18,8 +19,8 @@ namespace Timesheets.BusinessLogic
 
         public async Task<Person> GetAsync(int id, CancellationToken token) => await _personsRepository.GetAsync(id, token); 
 
-        public async Task<Person> GetAsync(string firstName, CancellationToken token) 
-            => await _personsRepository.GetAsync(firstName, token);
+        public async Task<Person> GetAsync(Person term, CancellationToken token) 
+            => await _personsRepository.GetAsync(term, token);
 
         public async Task<IReadOnlyCollection<Person>> GetRangeAsync(int skip, int takeCount, CancellationToken token)
         => await _personsRepository.GetRangeAsync(skip, takeCount, token);
@@ -28,7 +29,6 @@ namespace Timesheets.BusinessLogic
 
         public async Task<bool> RemoveAsync(int id, CancellationToken token) => await _personsRepository.RemoveAsync(id, token);
 
-        public async Task UpdateAsync(Person newPerson, CancellationToken token) 
-            => await _personsRepository.UpdateAsync(newPerson, token);
+        public async Task UpdateAsync(Person newPerson, CancellationToken token) => await _personsRepository.TryUpdateAsync(newPerson, token);
     }
 }
