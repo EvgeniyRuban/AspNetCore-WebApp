@@ -4,10 +4,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using Timesheets.Core.Repositories;
-using Timesheets.Core.Services;
-using Timesheets.Data;
-using Timesheets.BusinessLogic;
+using Microsoft.EntityFrameworkCore;
+using Timesheets.DataBase;
+using Timesheets.DataBase.Repositories;
+using Timesheets.Entities;
+using Timesheets.Services;
 
 namespace Timesheets.Api
 {
@@ -22,14 +23,19 @@ namespace Timesheets.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Timesheets API", Version = "v1" });
             });
-            services.AddSingleton<IPersonsRepository, PersonsRepository>();
-            services.AddSingleton<IPersonsService, PersonsService>();
+            services.AddDbContext<AppDbContext>(options =>
+            {
+                options.UseNpgsql(Configuration.GetConnectionString("PostgreConnection"));
+            });
+            services.AddScoped<IDbRepository<User>, DbRepository<User>>();
+            services.AddScoped<IDbRepository<Employee>, DbRepository<Employee>>();
+            services.AddScoped<IEntityService<User>, EntityService<User>>();
+            services.AddScoped<IEntityService<Employee>, EntityService<Employee>>();
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -52,3 +58,4 @@ namespace Timesheets.Api
         }
     }
 }
+    
