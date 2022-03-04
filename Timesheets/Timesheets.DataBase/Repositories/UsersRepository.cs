@@ -26,10 +26,17 @@ namespace Timesheets.DataBase.Repositories
         {
             await Task.Run(() =>
             {
-                var userToDelete = _context.Users
-                                            .Where(u => u.Id == id)
-                                            .FirstOrDefault();
-                _context.Users.Remove(userToDelete);
+                try
+                {
+                    var userToDelete = _context.Users
+                                                .Where(u => u.Id == id)
+                                                .FirstOrDefault();
+                    _context.Users.Remove(userToDelete);
+                }
+                catch
+                {
+                    return;
+                }
             }, token);
             await _context.SaveChangesAsync(token);
         }
@@ -38,9 +45,16 @@ namespace Timesheets.DataBase.Repositories
         {
             return await Task.Run(() =>
             {
-                return _context.Users
-                                .Where(u => u.Id == id)
-                                .FirstOrDefault();
+                try
+                {
+                    return _context.Users
+                                    .Where(u => u.Id == id)
+                                    .FirstOrDefault();
+                }
+                catch
+                {
+                    return null;
+                }
             }, token);
         }
 
@@ -48,7 +62,14 @@ namespace Timesheets.DataBase.Repositories
         {
             return await Task.Run(() =>
             {
-                return _context.Users.Skip(skip).Take(take).ToList();
+                try
+                {
+                    return _context.Users.Skip(skip).Take(take).ToList();
+                }
+                catch
+                {
+                    return null;
+                }
             }, token);
         }
 
@@ -56,16 +77,21 @@ namespace Timesheets.DataBase.Repositories
         {
             await Task.Run(() =>
             {
-                var user = _context.Users
-                                    .Where(u => u.Id == newUser.Id)
-                                    .FirstOrDefault();
-                if (user == null)
-                    return;
+                try
+                {
+                    var user = _context.Users
+                                        .Where(u => u.Id == newUser.Id)
+                                        .FirstOrDefault();
 
-                user.FirstName = newUser.FirstName;
-                user.LastName = newUser.LastName;
-                user.Email = newUser.Email;
-                user.Age = newUser.Age;
+                    user.FirstName = newUser.FirstName;
+                    user.LastName = newUser.LastName;
+                    user.Email = newUser.Email;
+                    user.Age = newUser.Age;
+                }
+                catch
+                {
+                    return;
+                }
             }, token);
             await _context.SaveChangesAsync(token);
         }
