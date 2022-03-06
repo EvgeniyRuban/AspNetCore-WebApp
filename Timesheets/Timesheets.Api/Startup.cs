@@ -32,10 +32,10 @@ namespace Timesheets.Api
             {
                 options.UseNpgsql(Configuration.GetConnectionString("PostgreConnection"));
             });
-            services.AddScoped<IDbRepository<User>, DbRepository<User>>();
-            services.AddScoped<IDbRepository<Employee>, DbRepository<Employee>>();
-            services.AddScoped<IEntityService<User>, EntityService<User>>();
-            services.AddScoped<IEntityService<Employee>, EntityService<Employee>>();
+            services.AddScoped<IDbRepository<User>, UsersRepository>();
+            services.AddScoped<IDbRepository<Employee>, EmployeesRepository>();
+            services.AddScoped<IEntityService<User>, UsersService>();
+            services.AddScoped<IEntityService<Employee>, EmployeesService>();
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {

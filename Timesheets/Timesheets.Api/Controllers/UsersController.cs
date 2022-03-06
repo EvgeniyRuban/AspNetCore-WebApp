@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -12,44 +11,49 @@ namespace Timesheets.Api.Controllers
     [Route("[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly IEntityService<User> _userService;
+        private readonly IEntityService<User> _service;
 
-        public UsersController(IEntityService<User> userService)
+        public UsersController(IEntityService<User> service)
         {
-            _userService = userService;
+            _service = service;
         }
 
         [HttpGet]
         [Route("{id}")]
-        public async Task<ActionResult<User>> Get([FromRoute] Guid id, CancellationToken token)
+        public async Task<ActionResult<User>> GetAsync([FromRoute] int id, CancellationToken token)
         {
-            return null;
+            var result = await _service.GetAsync(id, token);
+            return Ok(result);
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetRangeAsync(
             [FromQuery] int skip, int take, CancellationToken token)
         {
-            return null;
+            var result = await _service.GetRangeAsync(skip, take, token);
+            return Ok(result);
         }
 
         [HttpPost]
         public async Task<ActionResult> AddAsync([FromBody] User user, CancellationToken token)
         {
-            return null;
+            await _service.AddAsync(user, token);
+            return Ok();
         }
 
         [HttpPut]
-        public async Task<ActionResult<bool>> UpdateAsync([FromBody] User user, CancellationToken token)
+        public async Task<ActionResult> UpdateAsync([FromBody] User user, CancellationToken token)
         {
-            return null;
+            await _service.UpdateAsync(user, token);
+            return Ok();
         }
 
         [HttpDelete]
         [Route("{id}")]
-        public async Task<ActionResult<bool>> RemoveAsync([FromRoute] Guid id, CancellationToken token)
+        public async Task<ActionResult<bool>> RemoveAsync([FromRoute] int id, CancellationToken token)
         {
-            return null;
+            await _service.DeleteAsync(id, token);
+            return Ok();
         }
     }
 }
