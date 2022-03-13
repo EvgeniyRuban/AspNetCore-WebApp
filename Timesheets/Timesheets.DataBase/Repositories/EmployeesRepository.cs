@@ -3,61 +3,39 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Timesheets.Entities;
+using Timesheets.DataBase.Repositories.Interfaces;
 
 namespace Timesheets.DataBase.Repositories
 {
-    public class EmployeesRepository : IDbRepository<Employee>
+    public class EmployeesRepository : IEmployeesRepository
     {
-        private AppDbContext _context;
+        private readonly AppDbContext _context;
 
         public EmployeesRepository(AppDbContext context)
         {
             _context = context;
         }
 
-        public async Task AddAsync(Employee employee, CancellationToken token)
-        {
-            await _context.Employees.AddAsync(employee, token);
-            await _context.SaveChangesAsync(token);
-        }
-
-        public async Task DeleteAsync(int id, CancellationToken token)
-        {
-            await Task.Run(() =>
-            {
-                try
-                {
-                    var employeeToDelete = _context.Users
-                                                .Where(e => e.Id == id)
-                                                .FirstOrDefault();
-                    _context.Users.Remove(employeeToDelete);
-                }
-                catch
-                {
-                    return;
-                }
-            }, token);
-            await _context.SaveChangesAsync(token);
-        }
-
-        public async Task<Employee> GetAsync(int id, CancellationToken token)
+        public async Task<Employee> GetAsync(int id, CancellationToken cancelToken)
         {
             return await Task.Run(() =>
             {
                 try
                 {
                     return _context.Employees
-                                    .Where(e => e.Id == id)
+                                    .Where(e => e.Id == id && e.IsDeleted == false)
                                     .FirstOrDefault();
                 }
                 catch
                 {
                     return null;
                 }
-            }, token);
+            }, cancelToken);
         }
-
-        public async Task<IReadOnlyCollection<Employee>> GetRangeAsync(int skip, int take, CancellationToken token)
+        public async Task<IReadOnlyCollection<Employee>> GetRangeAsync(
+            int skip, 
+            int take, 
+            CancellationToken cancelToken)
         {
             return await Task.Run(() =>
             {
@@ -69,31 +47,43 @@ namespace Timesheets.DataBase.Repositories
                 {
                     return null;
                 }
-            }, token);
+            }, cancelToken);
         }
-
-        public async Task UpdateAsync(Employee newEmployee, CancellationToken token)
+        public async Task AddAsync(Employee employee, CancellationToken cancelToken)
         {
-            await Task.Run(() =>
+            await _context.Employees.AddAsync(employee, cancelToken);
+            await _context.SaveChangesAsync(cancelToken);
+        }
+        public async Task UpdateAsync(Employee newEmployee, CancellationToken cancelToken)
+        {
+            var employee = await Task.Run(() =>
             {
-                try
-                {
-                    var employee = _context.Employees
-                                            .Where(u => u.Id == newEmployee.Id)
-                                            .FirstOrDefault();
+                return _context.Employees
+                                .Where(u => u.Id == newEmployee.Id && u.IsDeleted == false)
+                                .FirstOrDefault();
+            }, cancelToken);
+            if (employee != null)
+            {
+                employee.UserId = newEmployee.UserId;
+                employee.IsDeleted = newEmployee.IsDeleted;
+            }
+            await _context.SaveChangesAsync(cancelToken);
+        }
+        public async Task DeleteAsync(int id, CancellationToken cancelToken)
+        {
+            var employeeToDelete = await Task.Run(() =>
+            {
+                return _context.Employees
+                                .Where(e => e.Id == id && e.IsDeleted == false)
+                                .FirstOrDefault();
+            }, cancelToken);
 
-                    employee.Id = newEmployee.Id;
-                    employee.FirstName = newEmployee.FirstName;
-                    employee.LastName = newEmployee.LastName;
-                    employee.Email = newEmployee.Email;
-                    employee.Age = newEmployee.Age;
-                }
-                catch
-                {
-                    return;
-                }
-            }, token);
-            await _context.SaveChangesAsync(token);
+            if (employeeToDelete != null)
+            {
+                employeeToDelete.IsDeleted = true;
+            }
+
+            await _context.SaveChangesAsync(cancelToken);
         }
     }
 }

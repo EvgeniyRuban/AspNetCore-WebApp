@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Timesheets.Entities;
-using Timesheets.Services;
+using Timesheets.Entities.Dto;
+using Timesheets.Entities.Dto.Authentication;
+using Timesheets.Services.Interfaces;
 
 namespace Timesheets.Api.Controllers
 {
@@ -11,49 +14,62 @@ namespace Timesheets.Api.Controllers
     [Route("[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly IEntityService<User> _service;
+        private readonly IUsersService _usersService;
 
-        public UsersController(IEntityService<User> service)
+        public UsersController(IUsersService usersService)
         {
-            _service = service;
+            _usersService = usersService;
         }
 
-        [HttpGet]
-        [Route("{id}")]
-        public async Task<ActionResult<User>> GetAsync([FromRoute] int id, CancellationToken token)
-        {
-            var result = await _service.GetAsync(id, token);
-            return Ok(result);
-        }
-
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetRangeAsync(
-            [FromQuery] int skip, int take, CancellationToken token)
-        {
-            var result = await _service.GetRangeAsync(skip, take, token);
-            return Ok(result);
-        }
-
+        [Authorize]
         [HttpPost]
-        public async Task<ActionResult> AddAsync([FromBody] User user, CancellationToken token)
+        [Route("create")]
+        public async Task<ActionResult<CreateUserResponse>> CreateAsync(CreateUserRequest request, CancellationToken cancelToken)
         {
-            await _service.AddAsync(user, token);
-            return Ok();
+            var userResponse = await _usersService.CreateAsync(request, cancelToken);
+            return Ok(userResponse);
         }
 
-        [HttpPut]
-        public async Task<ActionResult> UpdateAsync([FromBody] User user, CancellationToken token)
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("authenticate")]
+        public async Task<ActionResult<LoginResponse>> Authenticate([FromBody] LoginRequest request, CancellationToken cancelToken)
         {
-            await _service.UpdateAsync(user, token);
-            return Ok();
+            var token = await _usersService.AuthenticateAsync(request, cancelToken);
+            if (token is null)
+            {
+                return BadRequest("Login or password is incorrect!");
+            }
+            SetTokenCookie(token.RefreshToken);
+            return Ok(token);
         }
 
-        [HttpDelete]
-        [Route("{id}")]
-        public async Task<ActionResult<bool>> RemoveAsync([FromRoute] int id, CancellationToken token)
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("refresh-token")]
+        public async Task<ActionResult<string>> Refresh(CancellationToken cancelToken)
         {
-            await _service.DeleteAsync(id, token);
-            return Ok();
+            var oldRefreshToken = Request.Cookies["refreshToken"];
+            var newTokens = await _usersService.RefreshTokenAsync(oldRefreshToken, cancelToken);
+
+            if (string.IsNullOrWhiteSpace(newTokens.AccessToken) ||
+                string.IsNullOrWhiteSpace(newTokens.RefreshToken))
+            {
+                return Unauthorized("Invalid token.");
+            }
+
+            SetTokenCookie(newTokens.RefreshToken);
+            return Ok(newTokens);
+        }
+
+        private void SetTokenCookie(string token)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = DateTime.UtcNow.AddDays(7)
+            };
+            Response.Cookies.Append("refreshToken", token, cookieOptions);
         }
     }
 }

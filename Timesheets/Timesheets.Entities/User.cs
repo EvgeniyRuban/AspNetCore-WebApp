@@ -1,10 +1,16 @@
-﻿namespace Timesheets.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Timesheets.Entities
 {
-    public sealed class User : Entity
+    [Table("Users", Schema = "Test")]
+    public sealed class User
     {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
+        public int Id { get; set; }
+        public string UserName { get; set; }
         public int Age { get; set; }
+        public string Login { get; set; }
+        public string PasswordHash { get; set; }
+        public byte[] PasswordSalt { get; set; }
+        public string RefreshToken { get; set; }
     }
 }

@@ -1,44 +1,140 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Timesheets.DataBase.Repositories;
+using System.Security.Cryptography;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.IdentityModel.Tokens;
 using Timesheets.Entities;
+using Timesheets.DataBase.Repositories;
+using Timesheets.Services.Interfaces;
+using Timesheets.Entities.Dto;
+using Timesheets.Entities.Dto.Authentication;
+using Timesheets.DataBase.Repositories.Interfaces;
 
 namespace Timesheets.Services
 {
-    public class UsersService : IEntityService<User>
+    public class UsersService : IUsersService
     {
-        private IDbRepository<User> _repository;
+        public const string SecretCode = "THIS IS SOME VERY SECRET STRING!!! Im blue da ba dee da ba di da ba dee da ba di da d ba dee da ba di da ba dee";
+        private readonly IUsersRepository _repository;
 
-        public UsersService(IDbRepository<User> repository)
+        public UsersService(IUsersRepository repository)
         {
             _repository = repository;
         }
 
-        public async Task AddAsync(User entity, CancellationToken token)
+        public async Task<User> GetByLoginAndPasswordAsync(LoginRequest request, CancellationToken cancelToken)
         {
-            await _repository.AddAsync(entity, token);
+            return await _repository.GetByLoginAndPasswordAsync(request.Login, request.Password, cancelToken);
         }
-
-        public async Task DeleteAsync(int id, CancellationToken token)
+        public async Task<User> GetByRefreshToken(string refreshToken, CancellationToken cancelToken)
         {
-            await _repository.DeleteAsync(id, token);
+            return await _repository.GetByRefreshToken(refreshToken, cancelToken);
         }
-
-        public async Task<User> GetAsync(int id, CancellationToken token)
+        public async Task<CreateUserResponse> CreateAsync(CreateUserRequest request, CancellationToken cancelToken)
         {
-            return await _repository.GetAsync(id, token);
+            byte[] salt = GenerateSalt(16);
+            var user = new User
+            {
+                UserName = request.UserName,
+                Age = request.Age,
+                Login = request.Login,
+                PasswordHash = GetPasswordHash(request.Password, salt),
+                PasswordSalt = salt,
+            };
+            await _repository.AddAsync(user, cancelToken);
+            return new CreateUserResponse
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Age = user.Age,
+                Login = user.Login,
+            };
         }
-
-        public Task<IReadOnlyCollection<User>> GetRangeAsync(int skip, int take, CancellationToken token)
+        public async Task<LoginResponse> AuthenticateAsync(LoginRequest request, CancellationToken cancelToken)
         {
-            return _repository.GetRangeAsync(skip, take, token);
+            var user = await _repository.GetByLoginAsync(request.Login, cancelToken);
+            if(user is null)
+            {
+                return null;
+            }
+
+            string passwordHash = GetPasswordHash(request.Password, user.PasswordSalt);
+
+            if(string.CompareOrdinal(passwordHash, user.PasswordHash) != 0)
+            {
+                return null;
+            }
+            var token = new LoginResponse
+            {
+                AccessToken = GenerateJwtToken(user.Id, 1),
+                RefreshToken = GenerateRefreshToken(user.Id).Token,
+            };
+            user.RefreshToken = token.RefreshToken;
+            await _repository.UpdateByIdAsync(user, cancelToken);
+            return token;
         }
-
-        public async Task UpdateAsync(User entity, CancellationToken token)
+        public async Task<LoginResponse> RefreshTokenAsync(string refreshToken, CancellationToken cancelToken)
         {
-            await _repository.UpdateAsync(entity, token);
+            var user = await _repository.GetByRefreshToken(refreshToken, cancelToken);
+            if (user is null)
+            {
+                return null;
+            }
+            var token = new LoginResponse
+            {
+                AccessToken = GenerateJwtToken(user.Id, 1),
+                RefreshToken = GenerateRefreshToken(user.Id).Token,
+            };
+            user.RefreshToken = token.RefreshToken;
+            await _repository.UpdateByIdAsync(user, cancelToken);
+            return token;
+        }
+        private RefreshToken GenerateRefreshToken(int id)
+        {
+            return new RefreshToken
+            {
+                Expires = DateTime.Now.AddMinutes(360),
+                Token = GenerateJwtToken(id, 360),
+            };
+        }
+        private string GenerateJwtToken(int id, int minutes)
+        {
+            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+            byte[] key = Encoding.ASCII.GetBytes(SecretCode);
+
+            SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.Name, id.ToString())
+                }),
+                Expires = DateTime.UtcNow.AddMinutes(minutes),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+        private string GetPasswordHash(string password, byte[] salt)
+        {
+            return Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                                                            password: password,
+                                                            salt: salt,
+                                                            prf: KeyDerivationPrf.HMACSHA256,
+                                                            iterationCount: 100_000,
+                                                            numBytesRequested: 256 / 8));
+        }
+        private byte[] GenerateSalt(int length)
+        {
+            byte[] salt = new byte[length];
+            using (var rngCsp = new RNGCryptoServiceProvider())
+            {
+                rngCsp.GetNonZeroBytes(salt);
+            }
+            return salt;
         }
     }
 }

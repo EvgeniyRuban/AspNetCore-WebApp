@@ -1,54 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using Timesheets.Entities;
+using Timesheets.DataBase.Repositories.Interfaces;
 
 namespace Timesheets.DataBase.Repositories
 {
-    public class UsersRepository : IDbRepository<User>
+    public class UsersRepository : IUsersRepository
     {
-        private AppDbContext _context;
+        private readonly AppDbContext _context;
 
         public UsersRepository(AppDbContext context)
         {
             _context = context;
         }
 
-        public async Task AddAsync(User user, CancellationToken token)
-        {
-            await _context.Users.AddAsync(user, token);
-            await _context.SaveChangesAsync(token);
-        }
-
-        public async Task DeleteAsync(int id, CancellationToken token)
-        {
-            await Task.Run(() =>
-            {
-                try
-                {
-                    var userToDelete = _context.Users
-                                                .Where(u => u.Id == id)
-                                                .FirstOrDefault();
-                    _context.Users.Remove(userToDelete);
-                }
-                catch
-                {
-                    return;
-                }
-            }, token);
-            await _context.SaveChangesAsync(token);
-        }
-
-        public async Task<User> GetAsync(int id, CancellationToken token)
+        public async Task<User> GetByLoginAndPasswordAsync(
+            string login, 
+            string password, 
+            CancellationToken token)
         {
             return await Task.Run(() =>
             {
                 try
                 {
                     return _context.Users
-                                    .Where(u => u.Id == id)
+                                    .Where(u => u.UserName == login && u.PasswordHash == password)
                                     .FirstOrDefault();
                 }
                 catch
@@ -57,43 +34,57 @@ namespace Timesheets.DataBase.Repositories
                 }
             }, token);
         }
-
-        public async Task<IReadOnlyCollection<User>> GetRangeAsync(int skip, int take, CancellationToken token)
+        public async Task<User> GetByLoginAsync(string login, CancellationToken cancelToken)
         {
             return await Task.Run(() =>
             {
+                return _context.Users
+                            .Where(u => u.Login == login)
+                            .FirstOrDefault();
+            }, cancelToken);
+        }
+        public Task<User> GetByRefreshToken(string refreshToken, CancellationToken cancelToken)
+        {
+            return Task.Run(() =>
+            {
                 try
                 {
-                    return _context.Users.Skip(skip).Take(take).ToList();
+                    return _context.Users
+                                    .Where(u => u.RefreshToken == refreshToken)
+                                    .FirstOrDefault();
                 }
                 catch
                 {
                     return null;
                 }
-            }, token);
+            }, cancelToken);
         }
-
-        public async Task UpdateAsync(User newUser, CancellationToken token)
+        public async Task UpdateByIdAsync(User userToUpdate, CancellationToken cancelToken)
         {
-            await Task.Run(() =>
+            var user = await Task.Run(() =>
             {
-                try
-                {
-                    var user = _context.Users
-                                        .Where(u => u.Id == newUser.Id)
-                                        .FirstOrDefault();
 
-                    user.FirstName = newUser.FirstName;
-                    user.LastName = newUser.LastName;
-                    user.Email = newUser.Email;
-                    user.Age = newUser.Age;
-                }
-                catch
-                {
-                    return;
-                }
-            }, token);
-            await _context.SaveChangesAsync(token);
+                return _context.Users
+                        .Where(u => u.Id == userToUpdate.Id)
+                        .FirstOrDefault();
+            }, cancelToken);
+
+            user = new User
+            {
+                Id = userToUpdate.Id,
+                UserName = userToUpdate.UserName,
+                Age = userToUpdate.Age,
+                Login = userToUpdate.Login,
+                PasswordHash = userToUpdate.PasswordHash,
+                PasswordSalt = userToUpdate.PasswordSalt,
+                RefreshToken = userToUpdate.RefreshToken,
+            };
+            await _context.SaveChangesAsync(cancelToken);
+        }
+        public async Task AddAsync(User user, CancellationToken cancelToken)
+        {
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync(cancelToken);
         }
     }
 }

@@ -1,11 +1,12 @@
-﻿namespace Timesheets.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Timesheets.Entities
 {
-    public sealed class Employee : Entity
+    [Table("Employees", Schema = "Test")]
+    public sealed class Employee : IEntity
     {
+        public int Id { get; set; }
         public int UserId { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
-        public int Age { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }

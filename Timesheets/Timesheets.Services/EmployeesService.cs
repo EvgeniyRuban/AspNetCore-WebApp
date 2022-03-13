@@ -1,44 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Timesheets.DataBase.Repositories;
+using Timesheets.DataBase.Repositories.Interfaces;
 using Timesheets.Entities;
+using Timesheets.Entities.Dto;
+using Timesheets.Services.Interfaces;
 
 namespace Timesheets.Services
-{
-    public class EmployeesService : IEntityService<Employee>
+{ 
+    public class EmployeesService : IEmployeesService
     {
-        private IDbRepository<Employee> _repository;
+        private readonly IEmployeesRepository _repository;
 
-        public EmployeesService(IDbRepository<Employee> repository)
+        public EmployeesService(IEmployeesRepository repository)
         {
             _repository = repository;
         }
 
-        public async Task AddAsync(Employee entity, CancellationToken token)
+        public async Task<Employee> GetAsync(int id, CancellationToken cancelToken)
         {
-            await _repository.AddAsync(entity, token);
+            return await _repository.GetAsync(id, cancelToken);
         }
-
-        public async Task DeleteAsync(int id, CancellationToken token)
+        public async Task<IReadOnlyCollection<Employee>> GetRangeAsync(int skip, int take, CancellationToken cancelToken)
         {
-            await _repository.DeleteAsync(id, token);
+            return await _repository.GetRangeAsync(skip, take, cancelToken);
         }
-
-        public async Task<Employee> GetAsync(int id, CancellationToken token)
+        public async Task AddAsync(CreateEmployeeRequest request, CancellationToken cancelToken)
         {
-            return await _repository.GetAsync(id, token);
+            var employee = new Employee
+            {
+                UserId = request.UserId,
+            };
+            await _repository.AddAsync(employee, cancelToken);
         }
-
-        public async Task<IReadOnlyCollection<Employee>> GetRangeAsync(int skip, int take, CancellationToken token)
+        public async Task UpdateAsync(Employee employeeToUpdate, CancellationToken cancelToken)
         {
-            return await _repository.GetRangeAsync(skip, take, token);
+            await _repository.UpdateAsync(employeeToUpdate, cancelToken);
         }
-
-        public async Task UpdateAsync(Employee entity, CancellationToken token)
+        public async Task DeleteAsync(int id, CancellationToken cancelToken)
         {
-            await _repository.UpdateAsync(entity, token);
+            await _repository.DeleteAsync(id, cancelToken);
         }
     }
 }
