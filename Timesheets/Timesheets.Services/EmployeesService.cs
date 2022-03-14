@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Timesheets.DataBase.Repositories;
 using Timesheets.DataBase.Repositories.Interfaces;
 using Timesheets.Entities;
 using Timesheets.Entities.Dto;
@@ -11,20 +11,41 @@ namespace Timesheets.Services
 { 
     public class EmployeesService : IEmployeesService
     {
-        private readonly IEmployeesRepository _repository;
+        private readonly IEmployeesRepository _employeesRepository;
+        private readonly IUsersService _usersService;
 
-        public EmployeesService(IEmployeesRepository repository)
+        public EmployeesService(IEmployeesRepository employeesRepository, IUsersService usersService)
         {
-            _repository = repository;
+            _employeesRepository = employeesRepository;
+            _usersService = usersService;
         }
 
-        public async Task<Employee> GetAsync(int id, CancellationToken cancelToken)
+        public async Task<EmployeeResponse> GetAsync(Guid id, CancellationToken cancelToken)
         {
-            return await _repository.GetAsync(id, cancelToken);
+            var employee = await _employeesRepository.GetAsync(id, cancelToken);
+            if (employee is null)
+            {
+                return null;
+            }
+            return new EmployeeResponse
+            {
+                Id = employee.Id,
+                User = await _usersService.GetByIdAsync((Guid)employee.UserId, cancelToken),
+            };
         }
-        public async Task<IReadOnlyCollection<Employee>> GetRangeAsync(int skip, int take, CancellationToken cancelToken)
+        public async Task<IReadOnlyCollection<EmployeeResponse>> GetRangeAsync(int skip, int take, CancellationToken cancelToken)
         {
-            return await _repository.GetRangeAsync(skip, take, cancelToken);
+            var employees = await _employeesRepository.GetRangeAsync(skip, take, cancelToken);
+            if (employees == null)
+            {
+                return null;
+            }
+            var employeeResponseCollection = new List<EmployeeResponse>(employees.Count);
+            for(int i = 0; i < employees.Count; i++)
+            {
+                employeeResponseCollection.Add(await GetAsync(employees[i].Id, cancelToken));
+            }
+            return employeeResponseCollection;
         }
         public async Task AddAsync(CreateEmployeeRequest request, CancellationToken cancelToken)
         {
@@ -32,15 +53,28 @@ namespace Timesheets.Services
             {
                 UserId = request.UserId,
             };
-            await _repository.AddAsync(employee, cancelToken);
+            if(employee.UserId != null)
+            {
+                employee.User = await _usersService.GetModelByIdAsync((Guid)request.UserId, cancelToken);
+            }
+            await _employeesRepository.AddAsync(employee, cancelToken);
         }
-        public async Task UpdateAsync(Employee employeeToUpdate, CancellationToken cancelToken)
+        public async Task UpdateAsync(EmployeeRequest request, CancellationToken cancelToken)
         {
-            await _repository.UpdateAsync(employeeToUpdate, cancelToken);
+            var user = await _usersService.GetByIdAsync((Guid)request.UserId, cancelToken);
+            if(user is null)
+            {
+                return;
+            }
+            var employee = new Employee
+            {
+                UserId = request.UserId,
+            };
+            await _employeesRepository.UpdateAsync(employee, cancelToken);
         }
-        public async Task DeleteAsync(int id, CancellationToken cancelToken)
+        public async Task DeleteAsync(Guid id, CancellationToken cancelToken)
         {
-            await _repository.DeleteAsync(id, cancelToken);
+            await _employeesRepository.DeleteAsync(id, cancelToken);
         }
     }
 }

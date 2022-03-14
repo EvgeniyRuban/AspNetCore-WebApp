@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Timesheets.Entities.Dto;
-using Timesheets.Entities.Dto.Authentication;
 using Timesheets.Services.Interfaces;
 
 namespace Timesheets.Api.Controllers
@@ -22,17 +21,27 @@ namespace Timesheets.Api.Controllers
         }
 
         [Authorize]
-        [HttpPost]
-        [Route("create")]
-        public async Task<ActionResult<CreateUserResponse>> CreateAsync(CreateUserRequest request, CancellationToken cancelToken)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<UserResponse>> GetAsync([FromRoute] Guid id, CancellationToken cancelToken)
+        {
+            var userResponse = await _usersService.GetByIdAsync(id, cancelToken);
+            if(userResponse is null)
+            {
+                return NotFound(id);
+            }
+            return Ok(userResponse);
+        }
+
+        [AllowAnonymous]
+        [HttpPost("create")]
+        public async Task<ActionResult<UserResponse>> CreateAsync(CreateUserRequest request, CancellationToken cancelToken)
         {
             var userResponse = await _usersService.CreateAsync(request, cancelToken);
             return Ok(userResponse);
         }
 
         [AllowAnonymous]
-        [HttpPost]
-        [Route("authenticate")]
+        [HttpPost("authenticate")]
         public async Task<ActionResult<LoginResponse>> Authenticate([FromBody] LoginRequest request, CancellationToken cancelToken)
         {
             var token = await _usersService.AuthenticateAsync(request, cancelToken);
@@ -45,8 +54,7 @@ namespace Timesheets.Api.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost]
-        [Route("refresh-token")]
+        [HttpPost("refresh-token")]
         public async Task<ActionResult<string>> Refresh(CancellationToken cancelToken)
         {
             var oldRefreshToken = Request.Cookies["refreshToken"];

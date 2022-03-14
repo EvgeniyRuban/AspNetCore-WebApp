@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using Timesheets.Entities;
@@ -15,37 +16,21 @@ namespace Timesheets.DataBase.Repositories
             _context = context;
         }
 
-        public async Task<User> GetByLoginAndPasswordAsync(
-            string login, 
-            string password, 
-            CancellationToken token)
+        public async Task<User> GetByIdAsync(Guid id, CancellationToken cancelToken)
         {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    return _context.Users
-                                    .Where(u => u.UserName == login && u.PasswordHash == password)
-                                    .FirstOrDefault();
-                }
-                catch
-                {
-                    return null;
-                }
-            }, token);
+            return await Task.Run(() => 
+                                _context.Users.FirstOrDefault(u => u.Id == id), 
+                                cancelToken);
         }
         public async Task<User> GetByLoginAsync(string login, CancellationToken cancelToken)
         {
-            return await Task.Run(() =>
-            {
-                return _context.Users
-                            .Where(u => u.Login == login)
-                            .FirstOrDefault();
-            }, cancelToken);
+            return await Task.Run(() => 
+                                _context.Users.FirstOrDefault(u => u.Login == login), 
+                                cancelToken);
         }
-        public Task<User> GetByRefreshToken(string refreshToken, CancellationToken cancelToken)
+        public async Task<User> GetByRefreshToken(string refreshToken, CancellationToken cancelToken)
         {
-            return Task.Run(() =>
+            return await Task.Run(() =>
             {
                 try
                 {
@@ -65,14 +50,14 @@ namespace Timesheets.DataBase.Repositories
             {
 
                 return _context.Users
-                        .Where(u => u.Id == userToUpdate.Id)
-                        .FirstOrDefault();
+                        .FirstOrDefault( u => u.Id == userToUpdate.Id);
             }, cancelToken);
 
             user = new User
             {
                 Id = userToUpdate.Id,
-                UserName = userToUpdate.UserName,
+                Name = userToUpdate.Name,
+                Surname = userToUpdate.Surname,
                 Age = userToUpdate.Age,
                 Login = userToUpdate.Login,
                 PasswordHash = userToUpdate.PasswordHash,

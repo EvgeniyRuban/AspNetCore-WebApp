@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,15 +17,14 @@ namespace Timesheets.DataBase.Repositories
             _context = context;
         }
 
-        public async Task<Employee> GetAsync(int id, CancellationToken cancelToken)
+        public async Task<Employee> GetAsync(Guid id, CancellationToken cancelToken)
         {
             return await Task.Run(() =>
             {
                 try
                 {
                     return _context.Employees
-                                    .Where(e => e.Id == id && e.IsDeleted == false)
-                                    .FirstOrDefault();
+                                    .FirstOrDefault(e => e.Id == id && e.IsDeleted == false);
                 }
                 catch
                 {
@@ -32,7 +32,7 @@ namespace Timesheets.DataBase.Repositories
                 }
             }, cancelToken);
         }
-        public async Task<IReadOnlyCollection<Employee>> GetRangeAsync(
+        public async Task<List<Employee>> GetRangeAsync(
             int skip, 
             int take, 
             CancellationToken cancelToken)
@@ -59,23 +59,20 @@ namespace Timesheets.DataBase.Repositories
             var employee = await Task.Run(() =>
             {
                 return _context.Employees
-                                .Where(u => u.Id == newEmployee.Id && u.IsDeleted == false)
-                                .FirstOrDefault();
+                                .FirstOrDefault(e => e.Id == newEmployee.Id && e.IsDeleted == false);
             }, cancelToken);
             if (employee != null)
             {
                 employee.UserId = newEmployee.UserId;
-                employee.IsDeleted = newEmployee.IsDeleted;
             }
             await _context.SaveChangesAsync(cancelToken);
         }
-        public async Task DeleteAsync(int id, CancellationToken cancelToken)
+        public async Task DeleteAsync(Guid id, CancellationToken cancelToken)
         {
             var employeeToDelete = await Task.Run(() =>
             {
                 return _context.Employees
-                                .Where(e => e.Id == id && e.IsDeleted == false)
-                                .FirstOrDefault();
+                                .FirstOrDefault(e => e.Id == id && e.IsDeleted == false);
             }, cancelToken);
 
             if (employeeToDelete != null)

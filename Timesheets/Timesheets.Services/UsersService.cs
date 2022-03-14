@@ -8,7 +8,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.IdentityModel.Tokens;
 using Timesheets.Entities;
-using Timesheets.DataBase.Repositories;
 using Timesheets.Services.Interfaces;
 using Timesheets.Entities.Dto;
 using Timesheets.Entities.Dto.Authentication;
@@ -26,32 +25,48 @@ namespace Timesheets.Services
             _repository = repository;
         }
 
-        public async Task<User> GetByLoginAndPasswordAsync(LoginRequest request, CancellationToken cancelToken)
+        public async Task<UserResponse> GetByIdAsync(Guid id, CancellationToken cancelToken)
         {
-            return await _repository.GetByLoginAndPasswordAsync(request.Login, request.Password, cancelToken);
+            var user = await _repository.GetByIdAsync(id, cancelToken);
+            if(user is null)
+            {
+                return null;
+            }
+            return new UserResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Surname = user.Surname,
+                Age = user.Age,
+            };
         }
-        public async Task<User> GetByRefreshToken(string refreshToken, CancellationToken cancelToken)
+        public async Task<User> GetModelByIdAsync(Guid id, CancellationToken cancelToken)
+        {
+            return await _repository.GetByIdAsync(id, cancelToken);
+        }
+        public async Task<User> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancelToken)
         {
             return await _repository.GetByRefreshToken(refreshToken, cancelToken);
         }
-        public async Task<CreateUserResponse> CreateAsync(CreateUserRequest request, CancellationToken cancelToken)
+        public async Task<UserResponse> CreateAsync(CreateUserRequest request, CancellationToken cancelToken)
         {
             byte[] salt = GenerateSalt(16);
             var user = new User
             {
-                UserName = request.UserName,
+                Name = request.Name,
+                Surname = request.Surname,
                 Age = request.Age,
                 Login = request.Login,
                 PasswordHash = GetPasswordHash(request.Password, salt),
                 PasswordSalt = salt,
             };
             await _repository.AddAsync(user, cancelToken);
-            return new CreateUserResponse
+            return new UserResponse
             {
                 Id = user.Id,
-                UserName = user.UserName,
+                Name = user.Name,
+                Surname = user.Surname,
                 Age = user.Age,
-                Login = user.Login,
             };
         }
         public async Task<LoginResponse> AuthenticateAsync(LoginRequest request, CancellationToken cancelToken)
@@ -70,7 +85,7 @@ namespace Timesheets.Services
             }
             var token = new LoginResponse
             {
-                AccessToken = GenerateJwtToken(user.Id, 1),
+                AccessToken = GenerateJwtToken(user.Id, 10),
                 RefreshToken = GenerateRefreshToken(user.Id).Token,
             };
             user.RefreshToken = token.RefreshToken;
@@ -86,14 +101,14 @@ namespace Timesheets.Services
             }
             var token = new LoginResponse
             {
-                AccessToken = GenerateJwtToken(user.Id, 1),
+                AccessToken = GenerateJwtToken(user.Id, 10),
                 RefreshToken = GenerateRefreshToken(user.Id).Token,
             };
             user.RefreshToken = token.RefreshToken;
             await _repository.UpdateByIdAsync(user, cancelToken);
             return token;
         }
-        private RefreshToken GenerateRefreshToken(int id)
+        private RefreshToken GenerateRefreshToken(Guid id)
         {
             return new RefreshToken
             {
@@ -101,7 +116,7 @@ namespace Timesheets.Services
                 Token = GenerateJwtToken(id, 360),
             };
         }
-        private string GenerateJwtToken(int id, int minutes)
+        private string GenerateJwtToken(Guid id, int minutes)
         {
             JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
             byte[] key = Encoding.ASCII.GetBytes(SecretCode);

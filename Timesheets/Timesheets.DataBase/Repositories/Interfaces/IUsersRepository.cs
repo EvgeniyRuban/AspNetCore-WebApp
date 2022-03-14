@@ -1,12 +1,16 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Timesheets.Entities;
 
 namespace Timesheets.DataBase.Repositories.Interfaces
 {
+    /// <summary>
+    /// Methods for users data managnent at the database level.
+    /// </summary>
     public interface IUsersRepository
     {
-        Task<User> GetByLoginAndPasswordAsync(string login, string password, CancellationToken cancelToken);
+        Task<User> GetByIdAsync(Guid id, CancellationToken cancelToken);
         Task<User> GetByLoginAsync(string login, CancellationToken cancelToken);
         Task<User> GetByRefreshToken(string refreshToken, CancellationToken cancelToken);
         Task UpdateByIdAsync(User userToUpdate, CancellationToken cancelToken);
