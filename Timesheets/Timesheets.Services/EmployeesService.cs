@@ -41,9 +41,9 @@ namespace Timesheets.Services
                 return null;
             }
             var employeeResponseCollection = new List<EmployeeResponse>(employees.Count);
-            for(int i = 0; i < employees.Count; i++)
+            foreach(var employee in employees)
             {
-                employeeResponseCollection.Add(await GetAsync(employees[i].Id, cancelToken));
+                employeeResponseCollection.Add(await GetAsync(employee.Id, cancelToken));
             }
             return employeeResponseCollection;
         }

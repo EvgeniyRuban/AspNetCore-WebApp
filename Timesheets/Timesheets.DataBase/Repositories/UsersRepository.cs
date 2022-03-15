@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using Timesheets.Entities;
 using Timesheets.DataBase.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Timesheets.DataBase.Repositories
 {
@@ -18,41 +19,32 @@ namespace Timesheets.DataBase.Repositories
 
         public async Task<User> GetByIdAsync(Guid id, CancellationToken cancelToken)
         {
-            return await Task.Run(() => 
-                                _context.Users.FirstOrDefault(u => u.Id == id), 
-                                cancelToken);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id, cancelToken);
         }
         public async Task<User> GetByLoginAsync(string login, CancellationToken cancelToken)
         {
-            return await Task.Run(() => 
-                                _context.Users.FirstOrDefault(u => u.Login == login), 
-                                cancelToken);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Login == login, cancelToken);
         }
         public async Task<User> GetByRefreshToken(string refreshToken, CancellationToken cancelToken)
         {
-            return await Task.Run(() =>
+            try
             {
-                try
-                {
-                    return _context.Users
-                                    .Where(u => u.RefreshToken == refreshToken)
-                                    .FirstOrDefault();
-                }
-                catch
-                {
-                    return null;
-                }
-            }, cancelToken);
+                return await _context.Users
+                                .FirstOrDefaultAsync(
+                                    u => u.RefreshToken == refreshToken,
+                                    cancelToken);
+            }
+            catch
+            {
+                return null;
+            }
         }
         public async Task UpdateByIdAsync(User userToUpdate, CancellationToken cancelToken)
         {
-            var user = await Task.Run(() =>
-            {
-
-                return _context.Users
-                        .FirstOrDefault( u => u.Id == userToUpdate.Id);
-            }, cancelToken);
-
+            var user = await _context.Users
+                                        .FirstOrDefaultAsync(
+                                            u => u.Id == userToUpdate.Id, 
+                                            cancelToken);
             user = new User
             {
                 Id = userToUpdate.Id,
@@ -68,7 +60,7 @@ namespace Timesheets.DataBase.Repositories
         }
         public async Task AddAsync(User user, CancellationToken cancelToken)
         {
-            await _context.Users.AddAsync(user);
+            await _context.Users.AddAsync(user, cancelToken);
             await _context.SaveChangesAsync(cancelToken);
         }
     }

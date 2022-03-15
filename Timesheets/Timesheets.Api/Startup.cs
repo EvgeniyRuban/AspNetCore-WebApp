@@ -14,6 +14,7 @@ using Timesheets.DataBase.Repositories;
 using Timesheets.Services;
 using Timesheets.Services.Interfaces;
 using Timesheets.DataBase.Repositories.Interfaces;
+using Timesheets.Entities;
 
 namespace Timesheets.Api
 {
@@ -71,7 +72,7 @@ namespace Timesheets.Api
                 x.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(UsersService.SecretCode)),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(UserService.SecretCode)),
                     ValidateIssuer = false,
                     ValidateAudience = false,
                     ClockSkew = TimeSpan.Zero,
@@ -79,9 +80,18 @@ namespace Timesheets.Api
             });
 
             services.AddScoped<IUsersRepository, UsersRepository>();
-            services.AddScoped<IEmployeesRepository, EmployeesRepository>();
-            services.AddScoped<IUsersService, UsersService>();
+            services.AddScoped<IBaseRepository<Employee>, EmployeeRepository>();
+            services.AddScoped<IBaseRepository<Client>, ClientsRepository>();
+            services.AddScoped<IBaseRepository<Contract>, ContractsRepository>();
+            services.AddScoped<IBaseRepository<Invoice>, InvoicesRepository>();
+            services.AddScoped<IBaseRepository<Service>, ServicesRepository>();
+            services.AddScoped<IBaseRepository<Sheet>, SheetsRepository>();
+
+            services.AddScoped<IUsersService, UserService>();
             services.AddScoped<IEmployeesService, EmployeesService>();
+            services.AddScoped<IContractsService, ContractsService>();
+            services.AddScoped<IInvoicesService, InvoicesService>();
+            services.AddScoped<ISheetsService, SheetsService>();
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {

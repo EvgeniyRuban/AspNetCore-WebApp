@@ -5,10 +5,7 @@ using Timesheets.Entities;
 
 namespace Timesheets.DataBase.Repositories.Interfaces
 {
-    /// <summary>
-    /// Methods for employees data managnent at the database level.
-    /// </summary>
-    public interface IEmployeesRepository : IBaseRepository<Employee>
+    public interface IClientsRepository : IBaseRepository<Client>
     {
         Task DeleteAsync(Guid id, CancellationToken cancelToken);
     }

@@ -13,18 +13,18 @@ namespace Timesheets.Api.Controllers
     [Route("[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly IUsersService _usersService;
+        private readonly IUsersService _userService;
 
         public UsersController(IUsersService usersService)
         {
-            _usersService = usersService;
+            _userService = usersService;
         }
 
         [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<UserResponse>> GetAsync([FromRoute] Guid id, CancellationToken cancelToken)
         {
-            var userResponse = await _usersService.GetByIdAsync(id, cancelToken);
+            var userResponse = await _userService.GetByIdAsync(id, cancelToken);
             if(userResponse is null)
             {
                 return NotFound(id);
@@ -36,7 +36,7 @@ namespace Timesheets.Api.Controllers
         [HttpPost("create")]
         public async Task<ActionResult<UserResponse>> CreateAsync(CreateUserRequest request, CancellationToken cancelToken)
         {
-            var userResponse = await _usersService.CreateAsync(request, cancelToken);
+            var userResponse = await _userService.CreateAsync(request, cancelToken);
             return Ok(userResponse);
         }
 
@@ -44,7 +44,7 @@ namespace Timesheets.Api.Controllers
         [HttpPost("authenticate")]
         public async Task<ActionResult<LoginResponse>> Authenticate([FromBody] LoginRequest request, CancellationToken cancelToken)
         {
-            var token = await _usersService.AuthenticateAsync(request, cancelToken);
+            var token = await _userService.AuthenticateAsync(request, cancelToken);
             if (token is null)
             {
                 return BadRequest("Login or password is incorrect!");
@@ -58,7 +58,7 @@ namespace Timesheets.Api.Controllers
         public async Task<ActionResult<string>> Refresh(CancellationToken cancelToken)
         {
             var oldRefreshToken = Request.Cookies["refreshToken"];
-            var newTokens = await _usersService.RefreshTokenAsync(oldRefreshToken, cancelToken);
+            var newTokens = await _userService.RefreshTokenAsync(oldRefreshToken, cancelToken);
 
             if (string.IsNullOrWhiteSpace(newTokens.AccessToken) ||
                 string.IsNullOrWhiteSpace(newTokens.RefreshToken))

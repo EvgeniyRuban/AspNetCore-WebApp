@@ -15,19 +15,19 @@ using Timesheets.DataBase.Repositories.Interfaces;
 
 namespace Timesheets.Services
 {
-    public class UsersService : IUsersService
+    public class UserService : IUsersService
     {
         public const string SecretCode = "THIS IS SOME VERY SECRET STRING!!! Im blue da ba dee da ba di da ba dee da ba di da d ba dee da ba di da ba dee";
-        private readonly IUsersRepository _repository;
+        private readonly IUsersRepository _usersRepository;
 
-        public UsersService(IUsersRepository repository)
+        public UserService(IUsersRepository usersRepository)
         {
-            _repository = repository;
+            _usersRepository = usersRepository;
         }
 
         public async Task<UserResponse> GetByIdAsync(Guid id, CancellationToken cancelToken)
         {
-            var user = await _repository.GetByIdAsync(id, cancelToken);
+            var user = await _usersRepository.GetByIdAsync(id, cancelToken);
             if(user is null)
             {
                 return null;
@@ -42,11 +42,11 @@ namespace Timesheets.Services
         }
         public async Task<User> GetModelByIdAsync(Guid id, CancellationToken cancelToken)
         {
-            return await _repository.GetByIdAsync(id, cancelToken);
+            return await _usersRepository.GetByIdAsync(id, cancelToken);
         }
         public async Task<User> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancelToken)
         {
-            return await _repository.GetByRefreshToken(refreshToken, cancelToken);
+            return await _usersRepository.GetByRefreshToken(refreshToken, cancelToken);
         }
         public async Task<UserResponse> CreateAsync(CreateUserRequest request, CancellationToken cancelToken)
         {
@@ -60,7 +60,7 @@ namespace Timesheets.Services
                 PasswordHash = GetPasswordHash(request.Password, salt),
                 PasswordSalt = salt,
             };
-            await _repository.AddAsync(user, cancelToken);
+            await _usersRepository.AddAsync(user, cancelToken);
             return new UserResponse
             {
                 Id = user.Id,
@@ -71,7 +71,7 @@ namespace Timesheets.Services
         }
         public async Task<LoginResponse> AuthenticateAsync(LoginRequest request, CancellationToken cancelToken)
         {
-            var user = await _repository.GetByLoginAsync(request.Login, cancelToken);
+            var user = await _usersRepository.GetByLoginAsync(request.Login, cancelToken);
             if(user is null)
             {
                 return null;
@@ -89,12 +89,12 @@ namespace Timesheets.Services
                 RefreshToken = GenerateRefreshToken(user.Id).Token,
             };
             user.RefreshToken = token.RefreshToken;
-            await _repository.UpdateByIdAsync(user, cancelToken);
+            await _usersRepository.UpdateByIdAsync(user, cancelToken);
             return token;
         }
         public async Task<LoginResponse> RefreshTokenAsync(string refreshToken, CancellationToken cancelToken)
         {
-            var user = await _repository.GetByRefreshToken(refreshToken, cancelToken);
+            var user = await _usersRepository.GetByRefreshToken(refreshToken, cancelToken);
             if (user is null)
             {
                 return null;
@@ -105,7 +105,7 @@ namespace Timesheets.Services
                 RefreshToken = GenerateRefreshToken(user.Id).Token,
             };
             user.RefreshToken = token.RefreshToken;
-            await _repository.UpdateByIdAsync(user, cancelToken);
+            await _usersRepository.UpdateByIdAsync(user, cancelToken);
             return token;
         }
         private RefreshToken GenerateRefreshToken(Guid id)

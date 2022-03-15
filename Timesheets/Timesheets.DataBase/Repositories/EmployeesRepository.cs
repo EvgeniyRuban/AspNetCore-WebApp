@@ -5,49 +5,49 @@ using System.Threading;
 using System.Threading.Tasks;
 using Timesheets.Entities;
 using Timesheets.DataBase.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Timesheets.DataBase.Repositories
 {
-    public class EmployeesRepository : IEmployeesRepository
+    public class EmployeeRepository : IEmployeesRepository
     {
         private readonly AppDbContext _context;
 
-        public EmployeesRepository(AppDbContext context)
+        public EmployeeRepository(AppDbContext context)
         {
             _context = context;
         }
 
         public async Task<Employee> GetAsync(Guid id, CancellationToken cancelToken)
         {
-            return await Task.Run(() =>
+            try
             {
-                try
-                {
-                    return _context.Employees
-                                    .FirstOrDefault(e => e.Id == id && e.IsDeleted == false);
-                }
-                catch
-                {
-                    return null;
-                }
-            }, cancelToken);
+                return await _context.Employees
+                                        .FirstOrDefaultAsync(
+                                            e => e.Id == id && e.IsDeleted == false, 
+                                            cancelToken);
+            }
+            catch
+            {
+                return null;
+            }
         }
-        public async Task<List<Employee>> GetRangeAsync(
-            int skip, 
-            int take, 
+        public async Task<IReadOnlyCollection<Employee>> GetRangeAsync(
+            int skip,
+            int take,
             CancellationToken cancelToken)
         {
-            return await Task.Run(() =>
+            try
             {
-                try
-                {
-                    return _context.Employees.Skip(skip).Take(take).ToList();
-                }
-                catch
-                {
-                    return null;
-                }
-            }, cancelToken);
+                return await _context.Employees
+                                        .Skip(skip)
+                                        .Take(take)
+                                        .ToListAsync(cancelToken);
+            }
+            catch
+            {
+                return null;
+            }
         }
         public async Task AddAsync(Employee employee, CancellationToken cancelToken)
         {
@@ -56,31 +56,27 @@ namespace Timesheets.DataBase.Repositories
         }
         public async Task UpdateAsync(Employee newEmployee, CancellationToken cancelToken)
         {
-            var employee = await Task.Run(() =>
-            {
-                return _context.Employees
-                                .FirstOrDefault(e => e.Id == newEmployee.Id && e.IsDeleted == false);
-            }, cancelToken);
+            var employee = await _context.Employees
+                                            .FirstOrDefaultAsync(
+                                                e => e.Id == newEmployee.Id && e.IsDeleted == false, 
+                                                cancelToken);
             if (employee != null)
             {
                 employee.UserId = newEmployee.UserId;
+                await _context.SaveChangesAsync(cancelToken);
             }
-            await _context.SaveChangesAsync(cancelToken);
         }
         public async Task DeleteAsync(Guid id, CancellationToken cancelToken)
         {
-            var employeeToDelete = await Task.Run(() =>
-            {
-                return _context.Employees
-                                .FirstOrDefault(e => e.Id == id && e.IsDeleted == false);
-            }, cancelToken);
-
+            var employeeToDelete = await _context.Employees
+                                                    .FirstOrDefaultAsync(
+                                                        e => e.Id == id && e.IsDeleted == false, 
+                                                        cancelToken);
             if (employeeToDelete != null)
             {
                 employeeToDelete.IsDeleted = true;
+                await _context.SaveChangesAsync(cancelToken);
             }
-
-            await _context.SaveChangesAsync(cancelToken);
         }
     }
 }
