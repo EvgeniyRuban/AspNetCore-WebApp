@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Timesheets.Entities.Dto
 {
@@ -9,6 +8,6 @@ namespace Timesheets.Entities.Dto
     public sealed class CreateEmployeeRequest
     {
         [MinLength(1)]
-        public Guid? UserId { get; set; }
+        public int UserId { get; set; }
     }
 }

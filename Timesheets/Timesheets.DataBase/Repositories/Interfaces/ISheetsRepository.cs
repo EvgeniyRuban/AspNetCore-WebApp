@@ -9,7 +9,7 @@ namespace Timesheets.DataBase.Repositories.Interfaces
     public interface ISheetsRepository : IBaseRepository<Sheet>
     {
         Task<IEnumerable<Sheet>> GetItemsForInvoice(
-            Guid contractId, 
+            int contractId, 
             DateTime dateStart, 
             DateTime dateEnd, 
             CancellationToken cancelToken);

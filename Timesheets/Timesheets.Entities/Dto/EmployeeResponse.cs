@@ -7,7 +7,6 @@ namespace Timesheets.Entities.Dto
     /// </summary>
     public sealed class EmployeeResponse
     {
-        public Guid Id { get; set; }
-        public UserResponse User { get; set; }
+        public int? Id { get; set; }
     }
 }

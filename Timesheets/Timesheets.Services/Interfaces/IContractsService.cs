@@ -1,10 +1,10 @@
-﻿using System;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Timesheets.Services.Interfaces
 {
     public interface IContractsService
     {
-        Task<bool?> CheckContractIsActive(Guid id);
+        Task<bool?> CheckContractIsActiveAsync(int id, CancellationToken cancelToken);
     }
 }

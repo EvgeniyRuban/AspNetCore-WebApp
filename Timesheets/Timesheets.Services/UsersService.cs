@@ -15,17 +15,17 @@ using Timesheets.DataBase.Repositories.Interfaces;
 
 namespace Timesheets.Services
 {
-    public class UserService : IUsersService
+    public class UsersService : IUsersService
     {
         public const string SecretCode = "THIS IS SOME VERY SECRET STRING!!! Im blue da ba dee da ba di da ba dee da ba di da d ba dee da ba di da ba dee";
         private readonly IUsersRepository _usersRepository;
 
-        public UserService(IUsersRepository usersRepository)
+        public UsersService(IUsersRepository usersRepository)
         {
             _usersRepository = usersRepository;
         }
 
-        public async Task<UserResponse> GetByIdAsync(Guid id, CancellationToken cancelToken)
+        public async Task<UserResponse> GetByIdAsync(int id, CancellationToken cancelToken)
         {
             var user = await _usersRepository.GetByIdAsync(id, cancelToken);
             if(user is null)
@@ -40,7 +40,7 @@ namespace Timesheets.Services
                 Age = user.Age,
             };
         }
-        public async Task<User> GetModelByIdAsync(Guid id, CancellationToken cancelToken)
+        public async Task<User> GetModelByIdAsync(int id, CancellationToken cancelToken)
         {
             return await _usersRepository.GetByIdAsync(id, cancelToken);
         }
@@ -108,7 +108,7 @@ namespace Timesheets.Services
             await _usersRepository.UpdateByIdAsync(user, cancelToken);
             return token;
         }
-        private RefreshToken GenerateRefreshToken(Guid id)
+        private RefreshToken GenerateRefreshToken(int id)
         {
             return new RefreshToken
             {
@@ -116,7 +116,7 @@ namespace Timesheets.Services
                 Token = GenerateJwtToken(id, 360),
             };
         }
-        private string GenerateJwtToken(Guid id, int minutes)
+        private string GenerateJwtToken(int id, int minutes)
         {
             JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
             byte[] key = Encoding.ASCII.GetBytes(SecretCode);

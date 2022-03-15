@@ -18,7 +18,7 @@ namespace Timesheets.DataBase.Repositories
             _context = context;
         }
 
-        public async Task<Invoice> GetAsync(Guid id, CancellationToken cancelToken)
+        public async Task<Invoice> GetAsync(int id, CancellationToken cancelToken)
         {
             return await _context.Invoices.FirstOrDefaultAsync(i => i.Id == id, cancelToken);
         }

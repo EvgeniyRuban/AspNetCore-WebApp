@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +17,7 @@ namespace Timesheets.DataBase.Repositories
             _context = context;
         }
 
-        public async Task<Client> GetAsync(Guid id, CancellationToken cancelToken)
+        public async Task<Client> GetAsync(int id, CancellationToken cancelToken)
         {
             return await  _context.Clients.FirstOrDefaultAsync(i => i.Id == id, cancelToken);
         }
@@ -56,7 +55,7 @@ namespace Timesheets.DataBase.Repositories
             };
             await _context.SaveChangesAsync(cancelToken);
         }
-        public async Task DeleteAsync(Guid id, CancellationToken cancelToken)
+        public async Task DeleteAsync(int id, CancellationToken cancelToken)
         {
             var item = await _context.Clients.FirstOrDefaultAsync(i => i.Id == id, cancelToken);
             if(item is null)

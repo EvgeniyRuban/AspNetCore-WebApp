@@ -1,10 +1,11 @@
-﻿using System;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using Timesheets.Entities.Dto;
 
 namespace Timesheets.Services.Interfaces
 {
     public interface IInvoicesService
     {
-        Task<Guid> Create(InvoiceRequest request);
+        Task AddAsync(InvoiceRequest request, CancellationToken cancelToken);
     }
 }

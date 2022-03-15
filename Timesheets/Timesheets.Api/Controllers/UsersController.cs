@@ -9,6 +9,7 @@ using Timesheets.Services.Interfaces;
 
 namespace Timesheets.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class UsersController : ControllerBase
@@ -20,19 +21,17 @@ namespace Timesheets.Api.Controllers
             _userService = usersService;
         }
 
-        [Authorize]
         [HttpGet("{id}")]
-        public async Task<ActionResult<UserResponse>> GetAsync([FromRoute] Guid id, CancellationToken cancelToken)
+        public async Task<ActionResult<UserResponse>> GetAsync([FromRoute] int id, CancellationToken cancelToken)
         {
             var userResponse = await _userService.GetByIdAsync(id, cancelToken);
             if(userResponse is null)
             {
-                return NotFound(id);
+                return NoContent();
             }
             return Ok(userResponse);
         }
 
-        [AllowAnonymous]
         [HttpPost("create")]
         public async Task<ActionResult<UserResponse>> CreateAsync(CreateUserRequest request, CancellationToken cancelToken)
         {
@@ -60,8 +59,7 @@ namespace Timesheets.Api.Controllers
             var oldRefreshToken = Request.Cookies["refreshToken"];
             var newTokens = await _userService.RefreshTokenAsync(oldRefreshToken, cancelToken);
 
-            if (string.IsNullOrWhiteSpace(newTokens.AccessToken) ||
-                string.IsNullOrWhiteSpace(newTokens.RefreshToken))
+            if (newTokens is null)
             {
                 return Unauthorized("Invalid token.");
             }

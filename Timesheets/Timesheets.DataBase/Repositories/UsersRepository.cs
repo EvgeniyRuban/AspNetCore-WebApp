@@ -1,10 +1,8 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Timesheets.Entities;
 using Timesheets.DataBase.Repositories.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace Timesheets.DataBase.Repositories
 {
@@ -17,7 +15,7 @@ namespace Timesheets.DataBase.Repositories
             _context = context;
         }
 
-        public async Task<User> GetByIdAsync(Guid id, CancellationToken cancelToken)
+        public async Task<User> GetByIdAsync(int id, CancellationToken cancelToken)
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.Id == id, cancelToken);
         }

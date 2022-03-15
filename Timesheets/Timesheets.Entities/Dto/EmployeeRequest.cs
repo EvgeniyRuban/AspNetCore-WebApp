@@ -7,6 +7,6 @@ namespace Timesheets.Entities.Dto
     /// </summary>
     public sealed class EmployeeRequest
     {
-        public Guid? UserId { get; set; }
+        public int UserId { get; set; }
     }
 }

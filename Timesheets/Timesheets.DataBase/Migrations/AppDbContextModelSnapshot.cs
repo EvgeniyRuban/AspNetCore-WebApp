@@ -21,15 +21,16 @@ namespace Timesheets.DataBase.Migrations
 
             modelBuilder.Entity("Timesheets.Entities.Client", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -40,9 +41,10 @@ namespace Timesheets.DataBase.Migrations
 
             modelBuilder.Entity("Timesheets.Entities.Contract", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<DateTime>("DateEnd")
                         .HasColumnType("timestamp without time zone");
@@ -63,15 +65,16 @@ namespace Timesheets.DataBase.Migrations
 
             modelBuilder.Entity("Timesheets.Entities.Employee", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -82,12 +85,13 @@ namespace Timesheets.DataBase.Migrations
 
             modelBuilder.Entity("Timesheets.Entities.Invoice", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<Guid>("ContractId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("ContractId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("DateEnd")
                         .HasColumnType("timestamp without time zone");
@@ -107,9 +111,10 @@ namespace Timesheets.DataBase.Migrations
 
             modelBuilder.Entity("Timesheets.Entities.Service", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -121,9 +126,10 @@ namespace Timesheets.DataBase.Migrations
 
             modelBuilder.Entity("Timesheets.Entities.Sheet", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<int>("Amount")
                         .HasColumnType("integer");
@@ -131,23 +137,23 @@ namespace Timesheets.DataBase.Migrations
                     b.Property<DateTime>("ApprovedDate")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<Guid>("ContractId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("ContractId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("EmployeeId")
+                        .HasColumnType("integer");
 
-                    b.Property<Guid>("InvoiceId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("InvoiceId")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsApproved")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("ServiceId")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("ServiceId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -164,9 +170,10 @@ namespace Timesheets.DataBase.Migrations
 
             modelBuilder.Entity("Timesheets.Entities.User", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<int?>("Age")
                         .HasColumnType("integer");
@@ -204,9 +211,7 @@ namespace Timesheets.DataBase.Migrations
                 {
                     b.HasOne("Timesheets.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });
@@ -224,9 +229,7 @@ namespace Timesheets.DataBase.Migrations
                 {
                     b.HasOne("Timesheets.Entities.Contract", "Contract")
                         .WithMany()
-                        .HasForeignKey("ContractId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ContractId");
 
                     b.Navigation("Contract");
                 });
@@ -235,27 +238,19 @@ namespace Timesheets.DataBase.Migrations
                 {
                     b.HasOne("Timesheets.Entities.Contract", "Contract")
                         .WithMany("Sheets")
-                        .HasForeignKey("ContractId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ContractId");
 
                     b.HasOne("Timesheets.Entities.Employee", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("Sheets")
+                        .HasForeignKey("EmployeeId");
 
                     b.HasOne("Timesheets.Entities.Invoice", "Invoice")
                         .WithMany()
-                        .HasForeignKey("InvoiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("InvoiceId");
 
                     b.HasOne("Timesheets.Entities.Service", "Service")
                         .WithMany("Sheets")
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ServiceId");
 
                     b.Navigation("Contract");
 
@@ -267,6 +262,11 @@ namespace Timesheets.DataBase.Migrations
                 });
 
             modelBuilder.Entity("Timesheets.Entities.Contract", b =>
+                {
+                    b.Navigation("Sheets");
+                });
+
+            modelBuilder.Entity("Timesheets.Entities.Employee", b =>
                 {
                     b.Navigation("Sheets");
                 });

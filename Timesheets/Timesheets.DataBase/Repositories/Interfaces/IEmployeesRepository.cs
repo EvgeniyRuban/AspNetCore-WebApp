@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Timesheets.Entities;
 
@@ -10,6 +9,6 @@ namespace Timesheets.DataBase.Repositories.Interfaces
     /// </summary>
     public interface IEmployeesRepository : IBaseRepository<Employee>
     {
-        Task DeleteAsync(Guid id, CancellationToken cancelToken);
+        Task DeleteAsync(int id, CancellationToken cancelToken);
     }
 }

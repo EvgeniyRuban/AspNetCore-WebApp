@@ -4,6 +4,9 @@ namespace Timesheets.Entities
 {
     public sealed class Money
     {
+        public Money()
+        {
+        }
         public Money(decimal amount)
         {
             Amount = amount;

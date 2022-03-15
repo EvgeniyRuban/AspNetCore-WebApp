@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Timesheets.Entities
@@ -6,24 +7,13 @@ namespace Timesheets.Entities
     [Table("Sheets", Schema = "Test")]
     public sealed class Sheet
     {
-        public Guid Id { get; set; }
+        [Key]
+        public int Id { get; set; }
         public DateTime Date { get; set; }
-
-        [InverseProperty("Id")]
-        [ForeignKey(nameof(Employee))]
-        public Guid EmployeeId { get; set; }
-
-        [InverseProperty("Id")]
-        [ForeignKey(nameof(Contract))]
-        public Guid ContractId { get; set; }
-
-        [InverseProperty("Id")]
-        [ForeignKey(nameof(Service))]
-        public Guid ServiceId { get; set; }
-
-        [InverseProperty("Id")]
-        [ForeignKey(nameof(Invoice))]
-        public Guid InvoiceId { get; set; }
+        public int? EmployeeId { get; set; }
+        public int? ContractId { get; set; }
+        public int? ServiceId { get; set; }
+        public int? InvoiceId { get; set; }
         public int Amount { get; set; }
         public bool IsApproved { get; set; }
         public DateTime ApprovedDate { get; set; }

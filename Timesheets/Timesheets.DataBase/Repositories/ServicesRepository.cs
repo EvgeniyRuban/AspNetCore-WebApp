@@ -1,9 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Timesheets.DataBase.Repositories.Interfaces;
 using Timesheets.Entities;
 
@@ -18,7 +17,7 @@ namespace Timesheets.DataBase.Repositories
             _context = context;
         }
 
-        public async Task<Service> GetAsync(Guid id, CancellationToken cancelToken)
+        public async Task<Service> GetAsync(int id, CancellationToken cancelToken)
         {
             return await _context.Services.FirstOrDefaultAsync(i => i.Id == id, cancelToken);
         }

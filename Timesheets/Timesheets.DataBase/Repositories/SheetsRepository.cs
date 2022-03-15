@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Timesheets.DataBase.Repositories.Interfaces;
 using Timesheets.Entities;
 
@@ -18,7 +18,7 @@ namespace Timesheets.DataBase.Repositories
             _context = context;
         }
 
-        public async Task<Sheet> GetAsync(Guid id, CancellationToken cancelToken)
+        public async Task<Sheet> GetAsync(int id, CancellationToken cancelToken)
         {
             return await _context.Sheets.FirstOrDefaultAsync(i => i.Id == id, cancelToken);
         }
@@ -66,7 +66,7 @@ namespace Timesheets.DataBase.Repositories
             await _context.SaveChangesAsync(cancelToken);
         }
         public async Task<IEnumerable<Sheet>> GetItemsForInvoice(
-            Guid contractId, 
+            int contractId, 
             DateTime dateStart, 
             DateTime dateEnd,
             CancellationToken cancelToken)

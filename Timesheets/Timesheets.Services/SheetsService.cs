@@ -1,31 +1,89 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using Timesheets.DataBase.Repositories.Interfaces;
 using Timesheets.Entities;
+using Timesheets.Entities.Dto;
 using Timesheets.Services.Interfaces;
 
 namespace Timesheets.Services
 {
     public sealed class SheetsService : ISheetsService
     {
-        public Task<Guid> Create(SheetRequest sheet)
-        {
-            throw new NotImplementedException();
-        }
+        private readonly ISheetsRepository _sheetsRepository;
 
-        public Task<Sheet> GetItem(Guid id)
+        public SheetsService(ISheetsRepository repository)
         {
-            throw new NotImplementedException();
+            _sheetsRepository = repository;
         }
-
-        public Task<IEnumerable<Sheet>> GetItems()
+        public async Task AddAsync(SheetRequest sheet, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+            var newSheet = new Sheet
+            {
+                Date = sheet.Date,
+                EmployeeId = sheet.EmployeeId,
+                ContractId = sheet.ContractId,
+                ServiceId = sheet.ServiceId,
+                InvoiceId = sheet.InvoiceId,
+                Amount = sheet.Amount,
+            };
+            await _sheetsRepository.AddAsync(newSheet, cancelToken);
         }
-
-        public Task Update(Guid id, SheetRequest sheetRequest)
+        public async Task<SheetResponse> GetAsync(int id, CancellationToken cancelToken)
         {
-            throw new NotImplementedException();
+            var sheet = await _sheetsRepository.GetAsync(id, cancelToken);  
+            if (sheet is null)
+            { 
+                return null; 
+            }
+            return new SheetResponse
+            {
+                Id = sheet.Id,
+                EmployeeId= sheet.EmployeeId,
+                ContractId = sheet.ContractId,
+                ServiceId= sheet.ServiceId,
+                InvoiceId= sheet.InvoiceId,
+                Amount= sheet.Amount,
+            };
+        }
+        public async Task<IReadOnlyCollection<SheetResponse>> GetRangeAsync(int skip, int take, CancellationToken cancelToken)
+        {
+            var sheets = await _sheetsRepository.GetRangeAsync(skip, take, cancelToken);
+            if(sheets is null)
+            {
+                return null;
+            }
+            var sheetsCollection = new List<SheetResponse>(sheets.Count);
+            foreach(var item in sheets)
+            {
+                sheetsCollection.Add(new SheetResponse
+                {
+                    Id = item.Id,
+                    EmployeeId = item.EmployeeId,
+                    ContractId = item.ContractId,
+                    ServiceId = item.ServiceId,
+                    InvoiceId = item.InvoiceId,
+                    Amount = item.Amount,
+                });
+            }
+            return sheetsCollection;
+        }
+        public async Task UpdateAsync(CreateSheetRequest newSheet, CancellationToken cancelToken)
+        {
+            var sheetToUpdate = await _sheetsRepository.GetAsync(newSheet.Id, cancelToken);
+            if(sheetToUpdate is null)
+            {
+                return;
+            }
+            sheetToUpdate = new Sheet
+            {
+                Date = newSheet.Date,
+                EmployeeId= newSheet.EmployeeId,
+                ServiceId= newSheet.ServiceId,
+                InvoiceId = newSheet.InvoiceId,
+                Amount = newSheet.Amount,
+            };
+            await _sheetsRepository.UpdateAsync(sheetToUpdate, cancelToken);
         }
     }
 }

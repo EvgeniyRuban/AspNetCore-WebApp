@@ -72,7 +72,7 @@ namespace Timesheets.Api
                 x.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(UserService.SecretCode)),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(UsersService.SecretCode)),
                     ValidateIssuer = false,
                     ValidateAudience = false,
                     ClockSkew = TimeSpan.Zero,
@@ -80,14 +80,14 @@ namespace Timesheets.Api
             });
 
             services.AddScoped<IUsersRepository, UsersRepository>();
-            services.AddScoped<IBaseRepository<Employee>, EmployeeRepository>();
-            services.AddScoped<IBaseRepository<Client>, ClientsRepository>();
-            services.AddScoped<IBaseRepository<Contract>, ContractsRepository>();
-            services.AddScoped<IBaseRepository<Invoice>, InvoicesRepository>();
-            services.AddScoped<IBaseRepository<Service>, ServicesRepository>();
-            services.AddScoped<IBaseRepository<Sheet>, SheetsRepository>();
+            services.AddScoped<IEmployeesRepository, EmployeeRepository>();
+            services.AddScoped<IClientsRepository, ClientsRepository>();
+            services.AddScoped<IContractsRepository, ContractsRepository>();
+            services.AddScoped<IInvoicesRepository, InvoicesRepository>();
+            services.AddScoped<IServicesRepository, ServicesRepository>();
+            services.AddScoped<ISheetsRepository, SheetsRepository>();
 
-            services.AddScoped<IUsersService, UserService>();
+            services.AddScoped<IUsersService, UsersService>();
             services.AddScoped<IEmployeesService, EmployeesService>();
             services.AddScoped<IContractsService, ContractsService>();
             services.AddScoped<IInvoicesService, InvoicesService>();

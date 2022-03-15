@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +22,7 @@ namespace Timesheets.Api.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<EmployeeResponse>> GetAsync([FromRoute] Guid id, CancellationToken cancelToken)
+        public async Task<ActionResult<EmployeeResponse>> GetAsync([FromRoute] int id, CancellationToken cancelToken)
         {
             var result = await _employeeService.GetAsync(id, cancelToken);
             return Ok(result);
@@ -39,14 +38,14 @@ namespace Timesheets.Api.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<ActionResult> AddAsync([FromBody] CreateEmployeeRequest request, CancellationToken cancelToken)
         {
             await _employeeService.AddAsync(request, cancelToken);
             return Ok();
         }
 
-        [HttpPut]
+        [HttpPut("update")]
         public async Task<ActionResult> UpdateAsync([FromBody] EmployeeRequest employeeToUpdate, CancellationToken cancelToken)
         {
             await _employeeService.UpdateAsync(employeeToUpdate, cancelToken);
@@ -54,7 +53,7 @@ namespace Timesheets.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteAsync([FromRoute] Guid id, CancellationToken cancelToken)
+        public async Task<ActionResult> DeleteAsync([FromRoute] int id, CancellationToken cancelToken)
         {
             await _employeeService.DeleteAsync(id, cancelToken);
             return Ok();

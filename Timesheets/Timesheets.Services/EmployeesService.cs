@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Timesheets.DataBase.Repositories.Interfaces;
@@ -20,7 +19,7 @@ namespace Timesheets.Services
             _usersService = usersService;
         }
 
-        public async Task<EmployeeResponse> GetAsync(Guid id, CancellationToken cancelToken)
+        public async Task<EmployeeResponse> GetAsync(int id, CancellationToken cancelToken)
         {
             var employee = await _employeesRepository.GetAsync(id, cancelToken);
             if (employee is null)
@@ -30,7 +29,6 @@ namespace Timesheets.Services
             return new EmployeeResponse
             {
                 Id = employee.Id,
-                User = await _usersService.GetByIdAsync((Guid)employee.UserId, cancelToken),
             };
         }
         public async Task<IReadOnlyCollection<EmployeeResponse>> GetRangeAsync(int skip, int take, CancellationToken cancelToken)
@@ -53,15 +51,11 @@ namespace Timesheets.Services
             {
                 UserId = request.UserId,
             };
-            if(employee.UserId != null)
-            {
-                employee.User = await _usersService.GetModelByIdAsync((Guid)request.UserId, cancelToken);
-            }
             await _employeesRepository.AddAsync(employee, cancelToken);
         }
         public async Task UpdateAsync(EmployeeRequest request, CancellationToken cancelToken)
         {
-            var user = await _usersService.GetByIdAsync((Guid)request.UserId, cancelToken);
+            var user = await _usersService.GetByIdAsync(request.UserId, cancelToken);
             if(user is null)
             {
                 return;
@@ -72,7 +66,7 @@ namespace Timesheets.Services
             };
             await _employeesRepository.UpdateAsync(employee, cancelToken);
         }
-        public async Task DeleteAsync(Guid id, CancellationToken cancelToken)
+        public async Task DeleteAsync(int id, CancellationToken cancelToken)
         {
             await _employeesRepository.DeleteAsync(id, cancelToken);
         }

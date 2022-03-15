@@ -18,7 +18,7 @@ namespace Timesheets.DataBase.Repositories
             _context = context;
         }
 
-        public async Task<Contract> GetAsync(Guid id, CancellationToken cancelToken)
+        public async Task<Contract> GetAsync(int id, CancellationToken cancelToken)
         {
             return await _context.Contracts.FirstOrDefaultAsync(i => i.Id == id, cancelToken);
         }
@@ -55,7 +55,7 @@ namespace Timesheets.DataBase.Repositories
             };
             await _context.SaveChangesAsync(cancelToken);
         }
-        public async Task DeleteAsync(Guid id, CancellationToken cancelToken)
+        public async Task DeleteAsync(int id, CancellationToken cancelToken)
         {
             var item = await  _context.Contracts
                                         .FirstOrDefaultAsync(i => i.Id == id, cancelToken);
@@ -66,7 +66,7 @@ namespace Timesheets.DataBase.Repositories
             item.IsDeleted = true;
             await _context.SaveChangesAsync(cancelToken);
         }
-        public async Task<bool?> CheckContractIsActive(Guid id, CancellationToken cancelToken)
+        public async Task<bool?> CheckContractIsActive(int id, CancellationToken cancelToken)
         {
             var contract = await GetAsync(id, cancelToken);
             if(contract is null)

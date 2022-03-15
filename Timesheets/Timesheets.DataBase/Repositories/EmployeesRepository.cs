@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +17,7 @@ namespace Timesheets.DataBase.Repositories
             _context = context;
         }
 
-        public async Task<Employee> GetAsync(Guid id, CancellationToken cancelToken)
+        public async Task<Employee> GetAsync(int id, CancellationToken cancelToken)
         {
             try
             {
@@ -66,7 +65,7 @@ namespace Timesheets.DataBase.Repositories
                 await _context.SaveChangesAsync(cancelToken);
             }
         }
-        public async Task DeleteAsync(Guid id, CancellationToken cancelToken)
+        public async Task DeleteAsync(int id, CancellationToken cancelToken)
         {
             var employeeToDelete = await _context.Employees
                                                     .FirstOrDefaultAsync(
