@@ -11,25 +11,25 @@ namespace Timesheets.Services
     public class EmployeesService : IEmployeesService
     {
         private readonly IEmployeesRepository _employeesRepository;
-        private readonly IUsersService _usersService;
+        private readonly IUsersRepository _usersRepository;
 
-        public EmployeesService(IEmployeesRepository employeesRepository, IUsersService usersService)
+        public EmployeesService(IEmployeesRepository employeesRepository, IUsersRepository usersRepository)
         {
             _employeesRepository = employeesRepository;
-            _usersService = usersService;
+            _usersRepository = usersRepository;
         }
 
         public async Task<EmployeeResponse> GetAsync(int id, CancellationToken cancelToken)
         {
             var employee = await _employeesRepository.GetAsync(id, cancelToken);
-            if (employee is null)
+            if (employee != null)
             {
-                return null;
+                return new EmployeeResponse
+                {
+                    Id = employee.Id,
+                };
             }
-            return new EmployeeResponse
-            {
-                Id = employee.Id,
-            };
+            return null;
         }
         public async Task<IReadOnlyCollection<EmployeeResponse>> GetRangeAsync(int skip, int take, CancellationToken cancelToken)
         {
@@ -45,17 +45,38 @@ namespace Timesheets.Services
             }
             return employeeResponseCollection;
         }
-        public async Task AddAsync(CreateEmployeeRequest request, CancellationToken cancelToken)
+        public async Task<EmployeeResponse> CreateAsync(CreateEmployeeRequest request, CancellationToken cancelToken)
         {
+            if(request == null)
+            {
+                return null;
+            }
+            var user = await _usersRepository.GetByIdAsync(request.UserId, cancelToken);
+            if(user is null)
+            {
+                return null;
+            }
             var employee = new Employee
             {
                 UserId = request.UserId,
             };
-            await _employeesRepository.AddAsync(employee, cancelToken);
+            var newEmployee = await _employeesRepository.CreateAsync(employee, cancelToken);
+            if(newEmployee != null)
+            {
+                return new EmployeeResponse
+                {
+                    Id = newEmployee.Id,
+                };
+            }
+            return null;
         }
         public async Task UpdateAsync(EmployeeRequest request, CancellationToken cancelToken)
         {
-            var user = await _usersService.GetByIdAsync(request.UserId, cancelToken);
+            if(request == null)
+            {
+                return;
+            }
+            var user = await _usersRepository.GetByIdAsync(request.UserId, cancelToken);
             if(user is null)
             {
                 return;

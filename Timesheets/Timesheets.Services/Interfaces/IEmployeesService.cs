@@ -12,7 +12,7 @@ namespace Timesheets.Services.Interfaces
     {
         Task<EmployeeResponse> GetAsync(int id, CancellationToken cancelToken);
         Task<IReadOnlyCollection<EmployeeResponse>> GetRangeAsync(int skip, int take, CancellationToken cancelToken);
-        Task AddAsync(CreateEmployeeRequest request, CancellationToken cancelToken);
+        Task<EmployeeResponse> CreateAsync(CreateEmployeeRequest request, CancellationToken cancelToken);
         Task UpdateAsync(EmployeeRequest request, CancellationToken cancelToken);
         Task DeleteAsync(int id, CancellationToken cancelToken);
     }

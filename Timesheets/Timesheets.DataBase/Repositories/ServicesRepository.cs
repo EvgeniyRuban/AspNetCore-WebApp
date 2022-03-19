@@ -35,24 +35,24 @@ namespace Timesheets.DataBase.Repositories
                 return null;
             }
         }
-        public async Task AddAsync(Service item, CancellationToken cancelToken)
+        public async Task<Service> CreateAsync(Service item, CancellationToken cancelToken)
         {
-            await _context.Services.AddAsync(item, cancelToken);
+            var entityEntry = await _context.Services.AddAsync(item, cancelToken);
             await _context.SaveChangesAsync(cancelToken);
+            return entityEntry.Entity;
         }
         public async Task UpdateAsync(Service item, CancellationToken cancelToken)
         {
             var updateItem = await GetAsync(item.Id, cancelToken);
-            if (updateItem is null)
+            if (updateItem != null)
             {
-                return;
+                updateItem = new Service
+                {
+                    Name = item.Name,
+                    Sheets = item.Sheets,
+                };
+                await _context.SaveChangesAsync(cancelToken);
             }
-            updateItem = new Service
-            {
-                Name = item.Name,
-                Sheets = item.Sheets,
-            };
-            await _context.SaveChangesAsync(cancelToken);
         }
     }
 }

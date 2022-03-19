@@ -26,17 +26,21 @@ namespace Timesheets.DataBase.Repositories
         {
             try
             {
-                return await _context.Contracts.Skip(skip).Take(take).ToListAsync(cancelToken);
+                return await _context.Contracts
+                                        .Skip(skip)
+                                        .Take(take)
+                                        .ToListAsync(cancelToken);
             }
             catch
             {
                 return null;
             }
         }
-        public async Task AddAsync(Contract item, CancellationToken cancelToken)
+        public async Task<Contract> CreateAsync(Contract item, CancellationToken cancelToken)
         {
-            await _context.Contracts.AddAsync(item, cancelToken);
+            var entityEntry = await _context.Contracts.AddAsync(item, cancelToken);
             await _context.SaveChangesAsync(cancelToken);
+            return entityEntry.Entity;
         }
         public async Task UpdateAsync(Contract item, CancellationToken cancelToken)
         {

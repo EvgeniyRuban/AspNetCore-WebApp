@@ -69,7 +69,7 @@ namespace Timesheets.DataBase.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ContractId = table.Column<int>(type: "integer", nullable: true),
+                    ContractId = table.Column<int>(type: "integer", nullable: false),
                     DateStart = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     DateEnd = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Sum = table.Column<decimal>(type: "numeric", nullable: true)
@@ -83,7 +83,7 @@ namespace Timesheets.DataBase.Migrations
                         principalSchema: "Test",
                         principalTable: "Contracts",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -93,7 +93,7 @@ namespace Timesheets.DataBase.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<int>(type: "integer", nullable: true),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
@@ -105,7 +105,7 @@ namespace Timesheets.DataBase.Migrations
                         principalSchema: "Test",
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -138,10 +138,10 @@ namespace Timesheets.DataBase.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Date = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    EmployeeId = table.Column<int>(type: "integer", nullable: true),
-                    ContractId = table.Column<int>(type: "integer", nullable: true),
-                    ServiceId = table.Column<int>(type: "integer", nullable: true),
-                    InvoiceId = table.Column<int>(type: "integer", nullable: true),
+                    EmployeeId = table.Column<int>(type: "integer", nullable: false),
+                    ContractId = table.Column<int>(type: "integer", nullable: false),
+                    ServiceId = table.Column<int>(type: "integer", nullable: false),
+                    InvoiceId = table.Column<int>(type: "integer", nullable: false),
                     Amount = table.Column<int>(type: "integer", nullable: false),
                     IsApproved = table.Column<bool>(type: "boolean", nullable: false),
                     ApprovedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
@@ -155,28 +155,28 @@ namespace Timesheets.DataBase.Migrations
                         principalSchema: "Test",
                         principalTable: "Contracts",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Sheets_Employees_EmployeeId",
                         column: x => x.EmployeeId,
                         principalSchema: "Test",
                         principalTable: "Employees",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Sheets_Invocies_InvoiceId",
                         column: x => x.InvoiceId,
                         principalSchema: "Test",
                         principalTable: "Invocies",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Sheets_Services_ServiceId",
                         column: x => x.ServiceId,
                         principalSchema: "Test",
                         principalTable: "Services",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(

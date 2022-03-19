@@ -20,10 +20,10 @@ namespace Timesheets.Api.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<ActionResult> CreateAsync([FromBody] InvoiceRequest request, CancellationToken cancelToken)
+        public async Task<ActionResult<InvoiceResponse>> CreateAsync([FromBody] InvoiceRequest request, CancellationToken cancelToken)
         {
-            await _invoicesService.AddAsync(request, cancelToken);
-            return Ok();
+            var response = await _invoicesService.CreateAsync(request, cancelToken);
+            return Ok(response);
         }
     }
 }

@@ -39,10 +39,10 @@ namespace Timesheets.Api.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<ActionResult> AddAsync([FromBody] CreateEmployeeRequest request, CancellationToken cancelToken)
+        public async Task<ActionResult<EmployeeResponse>> CreateAsync([FromBody] CreateEmployeeRequest request, CancellationToken cancelToken)
         {
-            await _employeeService.AddAsync(request, cancelToken);
-            return Ok();
+            var response = await _employeeService.CreateAsync(request, cancelToken);
+            return Ok(response);
         }
 
         [HttpPut("update")]

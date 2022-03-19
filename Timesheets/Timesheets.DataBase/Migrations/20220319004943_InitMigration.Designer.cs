@@ -10,7 +10,7 @@ using Timesheets.DataBase;
 namespace Timesheets.DataBase.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220315192621_InitMigration")]
+    [Migration("20220319004943_InitMigration")]
     partial class InitMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -31,7 +31,7 @@ namespace Timesheets.DataBase.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<int?>("UserId")
+                    b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -92,7 +92,7 @@ namespace Timesheets.DataBase.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<int?>("ContractId")
+                    b.Property<int>("ContractId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("DateEnd")
@@ -139,22 +139,22 @@ namespace Timesheets.DataBase.Migrations
                     b.Property<DateTime>("ApprovedDate")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<int?>("ContractId")
+                    b.Property<int>("ContractId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<int?>("EmployeeId")
+                    b.Property<int>("EmployeeId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("InvoiceId")
+                    b.Property<int>("InvoiceId")
                         .HasColumnType("integer");
 
                     b.Property<bool>("IsApproved")
                         .HasColumnType("boolean");
 
-                    b.Property<int?>("ServiceId")
+                    b.Property<int>("ServiceId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -213,7 +213,9 @@ namespace Timesheets.DataBase.Migrations
                 {
                     b.HasOne("Timesheets.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -231,7 +233,9 @@ namespace Timesheets.DataBase.Migrations
                 {
                     b.HasOne("Timesheets.Entities.Contract", "Contract")
                         .WithMany()
-                        .HasForeignKey("ContractId");
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Contract");
                 });
@@ -240,19 +244,27 @@ namespace Timesheets.DataBase.Migrations
                 {
                     b.HasOne("Timesheets.Entities.Contract", "Contract")
                         .WithMany("Sheets")
-                        .HasForeignKey("ContractId");
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Timesheets.Entities.Employee", "Employee")
                         .WithMany("Sheets")
-                        .HasForeignKey("EmployeeId");
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Timesheets.Entities.Invoice", "Invoice")
                         .WithMany()
-                        .HasForeignKey("InvoiceId");
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Timesheets.Entities.Service", "Service")
                         .WithMany("Sheets")
-                        .HasForeignKey("ServiceId");
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Contract");
 

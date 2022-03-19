@@ -11,10 +11,8 @@ namespace Timesheets.Services.Interfaces
     public interface IUsersService
     {
         Task<UserResponse> GetByIdAsync(int id, CancellationToken cancelToken);
-        Task<User> GetModelByIdAsync(int id, CancellationToken cancelToken);
-        Task<User> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancelToken);
         Task<UserResponse> CreateAsync(CreateUserRequest request, CancellationToken cancelToken);
-        Task<LoginResponse> AuthenticateAsync(LoginRequest request, CancellationToken cancelToken);
-        Task<LoginResponse> RefreshTokenAsync(string refreshToken, CancellationToken cancelToken);
+        Task<User> GetModelByIdAsync(int id, CancellationToken cancelToken);
+        
     }
 }

@@ -35,10 +35,11 @@ namespace Timesheets.DataBase.Repositories
                 return null;
             }
         }
-        public async Task AddAsync(Client item, CancellationToken cancelToken)
+        public async Task<Client> CreateAsync(Client item, CancellationToken cancelToken)
         {
-            await _context.Clients.AddAsync(item, cancelToken);
+            var entityEntry = await _context.Clients.AddAsync(item, cancelToken);
             await _context.SaveChangesAsync(cancelToken);
+            return entityEntry.Entity;
         }
         public async Task UpdateAsync(Client item, CancellationToken cancelToken)
         {
