@@ -19,13 +19,17 @@ namespace Timesheets.DataBase.Repositories
 
         public async Task<Client> GetAsync(int id, CancellationToken cancelToken)
         {
-            return await  _context.Clients.FirstOrDefaultAsync(i => i.Id == id, cancelToken);
+            return await  _context.Clients.FirstOrDefaultAsync(
+                                            c => c.Id == id && 
+                                            c.IsDeleted == false
+                                            , cancelToken);
         }
         public async Task<IReadOnlyCollection<Client>> GetRangeAsync(int skip, int take, CancellationToken cancelToken)
         {
             try
             {
                 return await _context.Clients
+                                        .Where(c => c.IsDeleted == false)
                                         .Skip(skip)
                                         .Take(take)
                                         .ToListAsync(cancelToken);
@@ -50,7 +54,6 @@ namespace Timesheets.DataBase.Repositories
             }
             updateItem = new Client
             {
-                IsDeleted = item.IsDeleted,
                 UserId = item.UserId,
                 User = item.User,
             };
@@ -58,7 +61,10 @@ namespace Timesheets.DataBase.Repositories
         }
         public async Task DeleteAsync(int id, CancellationToken cancelToken)
         {
-            var item = await _context.Clients.FirstOrDefaultAsync(i => i.Id == id, cancelToken);
+            var item = await _context.Clients.FirstOrDefaultAsync(
+                                                c => c.Id == id &&
+                                                c.IsDeleted == false
+                                                , cancelToken);
             if(item is null)
             {
                 return;
