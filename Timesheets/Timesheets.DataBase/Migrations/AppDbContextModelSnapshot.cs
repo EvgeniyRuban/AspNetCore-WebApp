@@ -19,17 +19,62 @@ namespace Timesheets.DataBase.Migrations
                 .HasAnnotation("ProductVersion", "5.0.14")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-            modelBuilder.Entity("Timesheets.Entities.Employee", b =>
+            modelBuilder.Entity("Timesheets.Entities.Client", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Clients", "Test");
+                });
+
+            modelBuilder.Entity("Timesheets.Entities.Contract", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<DateTime>("DateEnd")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("DateStart")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Contracts", "Test");
+                });
+
+            modelBuilder.Entity("Timesheets.Entities.Employee", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -38,11 +83,97 @@ namespace Timesheets.DataBase.Migrations
                     b.ToTable("Employees", "Test");
                 });
 
+            modelBuilder.Entity("Timesheets.Entities.Invoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<int>("ContractId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("DateEnd")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("DateStart")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<decimal?>("Sum")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContractId");
+
+                    b.ToTable("Invocies", "Test");
+                });
+
+            modelBuilder.Entity("Timesheets.Entities.Service", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Services", "Test");
+                });
+
+            modelBuilder.Entity("Timesheets.Entities.Sheet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("ApprovedDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("ContractId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("InvoiceId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContractId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("Sheets", "Test");
+                });
+
             modelBuilder.Entity("Timesheets.Entities.User", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<int?>("Age")
                         .HasColumnType("integer");
@@ -76,6 +207,17 @@ namespace Timesheets.DataBase.Migrations
                     b.ToTable("Users", "Test");
                 });
 
+            modelBuilder.Entity("Timesheets.Entities.Client", b =>
+                {
+                    b.HasOne("Timesheets.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Timesheets.Entities.Employee", b =>
                 {
                     b.HasOne("Timesheets.Entities.User", "User")
@@ -83,6 +225,67 @@ namespace Timesheets.DataBase.Migrations
                         .HasForeignKey("UserId");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Timesheets.Entities.Invoice", b =>
+                {
+                    b.HasOne("Timesheets.Entities.Contract", "Contract")
+                        .WithMany()
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Contract");
+                });
+
+            modelBuilder.Entity("Timesheets.Entities.Sheet", b =>
+                {
+                    b.HasOne("Timesheets.Entities.Contract", "Contract")
+                        .WithMany("Sheets")
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Timesheets.Entities.Employee", "Employee")
+                        .WithMany("Sheets")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Timesheets.Entities.Invoice", "Invoice")
+                        .WithMany()
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Timesheets.Entities.Service", "Service")
+                        .WithMany("Sheets")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Contract");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Invoice");
+
+                    b.Navigation("Service");
+                });
+
+            modelBuilder.Entity("Timesheets.Entities.Contract", b =>
+                {
+                    b.Navigation("Sheets");
+                });
+
+            modelBuilder.Entity("Timesheets.Entities.Employee", b =>
+                {
+                    b.Navigation("Sheets");
+                });
+
+            modelBuilder.Entity("Timesheets.Entities.Service", b =>
+                {
+                    b.Navigation("Sheets");
                 });
 #pragma warning restore 612, 618
         }

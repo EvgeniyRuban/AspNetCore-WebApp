@@ -1,7 +1,6 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Timesheets.Entities;
 using Timesheets.DataBase.Repositories.Interfaces;
 
@@ -16,60 +15,55 @@ namespace Timesheets.DataBase.Repositories
             _context = context;
         }
 
-        public async Task<User> GetByIdAsync(Guid id, CancellationToken cancelToken)
+        public async Task<User> GetByIdAsync(int id, CancellationToken cancelToken)
         {
-            return await Task.Run(() => 
-                                _context.Users.FirstOrDefault(u => u.Id == id), 
-                                cancelToken);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id, cancelToken);
         }
         public async Task<User> GetByLoginAsync(string login, CancellationToken cancelToken)
         {
-            return await Task.Run(() => 
-                                _context.Users.FirstOrDefault(u => u.Login == login), 
-                                cancelToken);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Login == login, cancelToken);
         }
         public async Task<User> GetByRefreshToken(string refreshToken, CancellationToken cancelToken)
         {
-            return await Task.Run(() =>
+            try
             {
-                try
-                {
-                    return _context.Users
-                                    .Where(u => u.RefreshToken == refreshToken)
-                                    .FirstOrDefault();
-                }
-                catch
-                {
-                    return null;
-                }
-            }, cancelToken);
+                return await _context.Users
+                                .FirstOrDefaultAsync(
+                                    u => u.RefreshToken == refreshToken,
+                                    cancelToken);
+            }
+            catch
+            {
+                return null;
+            }
         }
         public async Task UpdateByIdAsync(User userToUpdate, CancellationToken cancelToken)
         {
-            var user = await Task.Run(() =>
+            var user = await _context.Users
+                                        .FirstOrDefaultAsync(
+                                            u => u.Id == userToUpdate.Id, 
+                                            cancelToken);
+            if(user != null)
             {
-
-                return _context.Users
-                        .FirstOrDefault( u => u.Id == userToUpdate.Id);
-            }, cancelToken);
-
-            user = new User
-            {
-                Id = userToUpdate.Id,
-                Name = userToUpdate.Name,
-                Surname = userToUpdate.Surname,
-                Age = userToUpdate.Age,
-                Login = userToUpdate.Login,
-                PasswordHash = userToUpdate.PasswordHash,
-                PasswordSalt = userToUpdate.PasswordSalt,
-                RefreshToken = userToUpdate.RefreshToken,
-            };
-            await _context.SaveChangesAsync(cancelToken);
+                user = new User
+                {
+                    Id = userToUpdate.Id,
+                    Name = userToUpdate.Name,
+                    Surname = userToUpdate.Surname,
+                    Age = userToUpdate.Age,
+                    Login = userToUpdate.Login,
+                    PasswordHash = userToUpdate.PasswordHash,
+                    PasswordSalt = userToUpdate.PasswordSalt,
+                    RefreshToken = userToUpdate.RefreshToken,
+                };
+                await _context.SaveChangesAsync(cancelToken);
+            }
         }
-        public async Task AddAsync(User user, CancellationToken cancelToken)
+        public async Task<User> CreateAsync(User user, CancellationToken cancelToken)
         {
-            await _context.Users.AddAsync(user);
+            var entityEntry = await _context.Users.AddAsync(user, cancelToken);
             await _context.SaveChangesAsync(cancelToken);
+            return entityEntry.Entity;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -8,12 +8,11 @@ namespace Timesheets.Entities
     public sealed class Employee
     {
         [Key]
-        public Guid Id { get; set; }
-
-        [InverseProperty("Id")]
-        [ForeignKey(nameof(User))]
-        public Guid? UserId { get; set; }
-        public User User { get; set; }
+        public int Id { get; set; }
+        [Column(TypeName = "integer")]
+        public int? UserId { get; set; }
         public bool IsDeleted { get; set; }
+        public User User { get; set; }
+        public ICollection<Sheet> Sheets { get; set; }
     }
 }

@@ -71,7 +71,7 @@ namespace Timesheets.Api
                 x.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(UsersService.SecretCode)),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(LoginService.SecretCode)),
                     ValidateIssuer = false,
                     ValidateAudience = false,
                     ClockSkew = TimeSpan.Zero,
@@ -79,9 +79,20 @@ namespace Timesheets.Api
             });
 
             services.AddScoped<IUsersRepository, UsersRepository>();
-            services.AddScoped<IEmployeesRepository, EmployeesRepository>();
+            services.AddScoped<IEmployeesRepository, EmployeeRepository>();
+            services.AddScoped<IClientsRepository, ClientsRepository>();
+            services.AddScoped<IContractsRepository, ContractsRepository>();
+            services.AddScoped<IInvoicesRepository, InvoicesRepository>();
+            services.AddScoped<IServicesRepository, ServicesRepository>();
+            services.AddScoped<ISheetsRepository, SheetsRepository>();
+
             services.AddScoped<IUsersService, UsersService>();
             services.AddScoped<IEmployeesService, EmployeesService>();
+            services.AddScoped<IContractsService, ContractsService>();
+            services.AddScoped<IInvoicesService, InvoicesService>();
+            services.AddScoped<ISheetsService, SheetsService>();
+            services.AddScoped<ILoginService, LoginService>();
+            services.AddScoped<IServicesManager, ServicesManager>();
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
