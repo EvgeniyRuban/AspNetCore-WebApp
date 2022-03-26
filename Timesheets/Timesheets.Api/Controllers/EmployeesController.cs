@@ -3,9 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Timesheets.Entities;
 using Timesheets.Services.Interfaces;
 using Timesheets.Entities.Dto;
+
 
 namespace Timesheets.Api.Controllers
 {
@@ -14,50 +14,48 @@ namespace Timesheets.Api.Controllers
     [Route("[controller]")]
     public class EmployeesController : ControllerBase
     {
-        private readonly IEmployeesService _employeesService;
+        private readonly IEmployeesService _employeeService;
 
         public EmployeesController(IEmployeesService service)
         {
-            _employeesService = service;
+            _employeeService = service;
         }
 
-        [HttpGet]
-        [Route("{id}")]
-        public async Task<ActionResult<Employee>> GetAsync([FromRoute] int id, CancellationToken cancelToken)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<EmployeeResponse>> GetAsync([FromRoute] int id, CancellationToken cancelToken)
         {
-            var result = await _employeesService.GetAsync(id, cancelToken);
+            var result = await _employeeService.GetAsync(id, cancelToken);
             return Ok(result);
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Employee>>> GetRangeAsync(
+        public async Task<ActionResult<IEnumerable<EmployeeResponse>>> GetRangeAsync(
             [FromQuery] int skip, 
             [FromQuery] int take, 
             CancellationToken cancelToken)
         {
-            var result = await _employeesService.GetRangeAsync(skip, take, cancelToken);
+            var result = await _employeeService.GetRangeAsync(skip, take, cancelToken);
             return Ok(result);
         }
 
-        [HttpPost]
-        public async Task<ActionResult> AddAsync([FromBody] CreateEmployeeRequest request, CancellationToken cancelToken)
+        [HttpPost("create")]
+        public async Task<ActionResult<EmployeeResponse>> CreateAsync([FromBody] CreateEmployeeRequest request, CancellationToken cancelToken)
         {
-            await _employeesService.AddAsync(request, cancelToken);
+            var response = await _employeeService.CreateAsync(request, cancelToken);
+            return Ok(response);
+        }
+
+        [HttpPut("update")]
+        public async Task<ActionResult> UpdateAsync([FromBody] EmployeeRequest employeeToUpdate, CancellationToken cancelToken)
+        {
+            await _employeeService.UpdateAsync(employeeToUpdate, cancelToken);
             return Ok();
         }
 
-        [HttpPut]
-        public async Task<ActionResult> UpdateAsync([FromBody] Employee employeeToUpdate, CancellationToken cancelToken)
-        {
-            await _employeesService.UpdateAsync(employeeToUpdate, cancelToken);
-            return Ok();
-        }
-
-        [HttpDelete]
-        [Route("{id}")]
+        [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteAsync([FromRoute] int id, CancellationToken cancelToken)
         {
-            await _employeesService.DeleteAsync(id, cancelToken);
+            await _employeeService.DeleteAsync(id, cancelToken);
             return Ok();
         }
     }

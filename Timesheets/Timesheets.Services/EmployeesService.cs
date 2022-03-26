@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Timesheets.DataBase.Repositories;
 using Timesheets.DataBase.Repositories.Interfaces;
 using Timesheets.Entities;
 using Timesheets.Entities.Dto;
@@ -11,36 +10,86 @@ namespace Timesheets.Services
 { 
     public class EmployeesService : IEmployeesService
     {
-        private readonly IEmployeesRepository _repository;
+        private readonly IEmployeesRepository _employeesRepository;
+        private readonly IUsersRepository _usersRepository;
 
-        public EmployeesService(IEmployeesRepository repository)
+        public EmployeesService(IEmployeesRepository employeesRepository, IUsersRepository usersRepository)
         {
-            _repository = repository;
+            _employeesRepository = employeesRepository;
+            _usersRepository = usersRepository;
         }
 
-        public async Task<Employee> GetAsync(int id, CancellationToken cancelToken)
+        public async Task<EmployeeResponse> GetAsync(int id, CancellationToken cancelToken)
         {
-            return await _repository.GetAsync(id, cancelToken);
+            var employee = await _employeesRepository.GetAsync(id, cancelToken);
+            if (employee != null)
+            {
+                return new EmployeeResponse
+                {
+                    Id = employee.Id,
+                };
+            }
+            return null;
         }
-        public async Task<IReadOnlyCollection<Employee>> GetRangeAsync(int skip, int take, CancellationToken cancelToken)
+        public async Task<IReadOnlyCollection<EmployeeResponse>> GetRangeAsync(int skip, int take, CancellationToken cancelToken)
         {
-            return await _repository.GetRangeAsync(skip, take, cancelToken);
+            var employees = await _employeesRepository.GetRangeAsync(skip, take, cancelToken);
+            if (employees == null)
+            {
+                return null;
+            }
+            var employeeResponseCollection = new List<EmployeeResponse>(employees.Count);
+            foreach(var employee in employees)
+            {
+                employeeResponseCollection.Add(await GetAsync(employee.Id, cancelToken));
+            }
+            return employeeResponseCollection;
         }
-        public async Task AddAsync(CreateEmployeeRequest request, CancellationToken cancelToken)
+        public async Task<EmployeeResponse> CreateAsync(CreateEmployeeRequest request, CancellationToken cancelToken)
         {
+            if(request == null)
+            {
+                return null;
+            }
+            var user = await _usersRepository.GetByIdAsync(request.UserId, cancelToken);
+            if(user is null)
+            {
+                return null;
+            }
             var employee = new Employee
             {
                 UserId = request.UserId,
             };
-            await _repository.AddAsync(employee, cancelToken);
+            var newEmployee = await _employeesRepository.CreateAsync(employee, cancelToken);
+            if(newEmployee != null)
+            {
+                return new EmployeeResponse
+                {
+                    Id = newEmployee.Id,
+                };
+            }
+            return null;
         }
-        public async Task UpdateAsync(Employee employeeToUpdate, CancellationToken cancelToken)
+        public async Task UpdateAsync(EmployeeRequest request, CancellationToken cancelToken)
         {
-            await _repository.UpdateAsync(employeeToUpdate, cancelToken);
+            if(request == null)
+            {
+                return;
+            }
+            var user = await _usersRepository.GetByIdAsync(request.UserId, cancelToken);
+            if(user is null)
+            {
+                return;
+            }
+            var employee = new Employee
+            {
+                UserId = request.UserId,
+            };
+            await _employeesRepository.UpdateAsync(employee, cancelToken);
         }
         public async Task DeleteAsync(int id, CancellationToken cancelToken)
         {
-            await _repository.DeleteAsync(id, cancelToken);
+            await _employeesRepository.DeleteAsync(id, cancelToken);
         }
     }
 }
