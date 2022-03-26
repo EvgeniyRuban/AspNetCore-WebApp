@@ -36,34 +36,34 @@ namespace Timesheets.DataBase.Repositories
                 return null;
             }
         }
-        public async Task AddAsync(Sheet item, CancellationToken cancelToken)
+        public async Task<Sheet> CreateAsync(Sheet item, CancellationToken cancelToken)
         {
-            await _context.Sheets.AddAsync(item, cancelToken);
+            var entityEntry = await _context.Sheets.AddAsync(item, cancelToken);
             await _context.SaveChangesAsync(cancelToken);
+            return entityEntry.Entity;
         }
         public async Task UpdateAsync(Sheet item, CancellationToken cancelToken)
         {
             var updateItem = await GetAsync(item.Id, cancelToken);
             if (updateItem is null)
             {
-                return;
+                updateItem = new Sheet
+                {
+                    Date = item.Date,
+                    EmployeeId = item.EmployeeId,
+                    ContractId = item.ContractId,
+                    ServiceId = item.ServiceId,
+                    InvoiceId = item.InvoiceId,
+                    Amount = item.Amount,
+                    IsApproved = item.IsApproved,
+                    ApprovedDate = item.ApprovedDate,
+                    Employee = item.Employee,
+                    Contract = item.Contract,
+                    Service = item.Service,
+                    Invoice = item.Invoice,
+                };
+                await _context.SaveChangesAsync(cancelToken);
             }
-            updateItem = new Sheet
-            {
-                Date = item.Date,
-                EmployeeId = item.EmployeeId,
-                ContractId = item.ContractId,
-                ServiceId = item.ServiceId,
-                InvoiceId = item.InvoiceId,
-                Amount = item.Amount,
-                IsApproved = item.IsApproved,
-                ApprovedDate = item.ApprovedDate,
-                Employee = item.Employee,
-                Contract = item.Contract,
-                Service = item.Service,
-                Invoice = item.Invoice,
-            };
-            await _context.SaveChangesAsync(cancelToken);
         }
         public async Task<IEnumerable<Sheet>> GetItemsForInvoice(
             int contractId, 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,34 +25,37 @@ namespace Timesheets.DataBase.Repositories
         {
             try
             {
-                return await _context.Invoices.Skip(skip).Take(take).ToListAsync(cancelToken);
+                return await _context.Invoices
+                                        .Skip(skip)
+                                        .Take(take)
+                                        .ToListAsync(cancelToken);
             }
             catch
             {
                 return null;
             }
         }
-        public async Task AddAsync(Invoice item, CancellationToken cancelToken)
+        public async Task<Invoice> CreateAsync(Invoice item, CancellationToken cancelToken)
         {
-            await _context.Invoices.AddAsync(item, cancelToken);
+            var entityEntry = await _context.Invoices.AddAsync(item, cancelToken);
             await _context.SaveChangesAsync(cancelToken);
+            return entityEntry.Entity;
         }
         public async Task UpdateAsync(Invoice item, CancellationToken cancelToken)
         {
             var updateItem = await GetAsync(item.Id, cancelToken);
-            if (updateItem is null)
+            if (updateItem != null)
             {
-                return;
+                updateItem = new Invoice
+                {
+                    ContractId = item.ContractId,
+                    DateStart = item.DateStart,
+                    DateEnd = item.DateEnd,
+                    Sum = item.Sum,
+                    Contract = item.Contract,
+                };
+                await _context.SaveChangesAsync(cancelToken);
             }
-            updateItem = new Invoice
-            {
-                ContractId = item.ContractId,
-                DateStart = item.DateStart,
-                DateEnd = item.DateEnd,
-                Sum = item.Sum,
-                Contract = item.Contract,
-            };
-            await _context.SaveChangesAsync(cancelToken);
         }
     }
 }

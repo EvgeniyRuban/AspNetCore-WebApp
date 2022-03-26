@@ -8,16 +8,13 @@ namespace Timesheets.Entities
     {
         [Key]
         public int Id { get; set; }
-
         [Required]
         [MinLength(1)][MaxLength(100)]
         public string Name { get; set; }
-
         [Required]
         [MinLength(1)][MaxLength(100)]
         public string Surname { get; set; }
         public int? Age { get; set; }
-
         [Required]
         [MinLength(1)][MaxLength(100)]
         public string Login { get; set; }

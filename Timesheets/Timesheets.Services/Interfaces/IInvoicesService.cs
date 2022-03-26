@@ -6,6 +6,7 @@ namespace Timesheets.Services.Interfaces
 {
     public interface IInvoicesService
     {
-        Task AddAsync(InvoiceRequest request, CancellationToken cancelToken);
+        Task<InvoiceResponse> GetAsync(int id, CancellationToken cancelToken);
+        Task<InvoiceResponse> CreateAsync(InvoiceRequest request, CancellationToken cancelToken);
     }
 }

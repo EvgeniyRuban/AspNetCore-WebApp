@@ -9,7 +9,7 @@ namespace Timesheets.Services.Interfaces
     {
         Task<SheetResponse> GetAsync(int id, CancellationToken cancelToken);
         Task<IReadOnlyCollection<SheetResponse>> GetRangeAsync(int skip, int take, CancellationToken cancelToken);
-        Task AddAsync(SheetRequest sheet, CancellationToken cancelToken);
-        Task UpdateAsync(CreateSheetRequest sheetToUpdate, CancellationToken cancelToken);
+        Task<SheetResponse> CreateAsync(CreateSheetRequest sheet, CancellationToken cancelToken);
+        Task UpdateAsync(SheetRequest sheetToUpdate, CancellationToken cancelToken);
     }
 }

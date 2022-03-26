@@ -20,23 +20,31 @@ namespace Timesheets.DataBase.Repositories
 
         public async Task<Contract> GetAsync(int id, CancellationToken cancelToken)
         {
-            return await _context.Contracts.FirstOrDefaultAsync(i => i.Id == id, cancelToken);
+            return await _context.Contracts.FirstOrDefaultAsync(
+                                                i => i.Id == id &&
+                                                i.IsDeleted == false, 
+                                                cancelToken);
         }
         public async Task<IReadOnlyCollection<Contract>> GetRangeAsync(int skip, int take, CancellationToken cancelToken)
         {
             try
             {
-                return await _context.Contracts.Skip(skip).Take(take).ToListAsync(cancelToken);
+                return await _context.Contracts
+                                        .Where(c => c.IsDeleted == false)
+                                        .Skip(skip)
+                                        .Take(take)
+                                        .ToListAsync(cancelToken);
             }
             catch
             {
                 return null;
             }
         }
-        public async Task AddAsync(Contract item, CancellationToken cancelToken)
+        public async Task<Contract> CreateAsync(Contract item, CancellationToken cancelToken)
         {
-            await _context.Contracts.AddAsync(item, cancelToken);
+            var entityEntry = await _context.Contracts.AddAsync(item, cancelToken);
             await _context.SaveChangesAsync(cancelToken);
+            return entityEntry.Entity;
         }
         public async Task UpdateAsync(Contract item, CancellationToken cancelToken)
         {
@@ -57,8 +65,10 @@ namespace Timesheets.DataBase.Repositories
         }
         public async Task DeleteAsync(int id, CancellationToken cancelToken)
         {
-            var item = await  _context.Contracts
-                                        .FirstOrDefaultAsync(i => i.Id == id, cancelToken);
+            var item = await  _context.Contracts.FirstOrDefaultAsync(
+                                                    c => c.Id == id &&
+                                                    c.IsDeleted == false,
+                                                    cancelToken);
             if (item is null)
             {
                 return;

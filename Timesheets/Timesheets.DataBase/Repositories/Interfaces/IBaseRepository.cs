@@ -8,7 +8,7 @@ namespace Timesheets.DataBase.Repositories.Interfaces
     {
         Task<T> GetAsync(int id, CancellationToken cancelToken);
         Task<IReadOnlyCollection<T>> GetRangeAsync(int skip, int take, CancellationToken cancelToken);
-        Task AddAsync(T item, CancellationToken cancelToken);
+        Task<T> CreateAsync(T item, CancellationToken cancelToken);
         Task UpdateAsync(T item, CancellationToken cancelToken);
     }
 }

@@ -43,23 +43,27 @@ namespace Timesheets.DataBase.Repositories
                                         .FirstOrDefaultAsync(
                                             u => u.Id == userToUpdate.Id, 
                                             cancelToken);
-            user = new User
+            if(user != null)
             {
-                Id = userToUpdate.Id,
-                Name = userToUpdate.Name,
-                Surname = userToUpdate.Surname,
-                Age = userToUpdate.Age,
-                Login = userToUpdate.Login,
-                PasswordHash = userToUpdate.PasswordHash,
-                PasswordSalt = userToUpdate.PasswordSalt,
-                RefreshToken = userToUpdate.RefreshToken,
-            };
-            await _context.SaveChangesAsync(cancelToken);
+                user = new User
+                {
+                    Id = userToUpdate.Id,
+                    Name = userToUpdate.Name,
+                    Surname = userToUpdate.Surname,
+                    Age = userToUpdate.Age,
+                    Login = userToUpdate.Login,
+                    PasswordHash = userToUpdate.PasswordHash,
+                    PasswordSalt = userToUpdate.PasswordSalt,
+                    RefreshToken = userToUpdate.RefreshToken,
+                };
+                await _context.SaveChangesAsync(cancelToken);
+            }
         }
-        public async Task AddAsync(User user, CancellationToken cancelToken)
+        public async Task<User> CreateAsync(User user, CancellationToken cancelToken)
         {
-            await _context.Users.AddAsync(user, cancelToken);
+            var entityEntry = await _context.Users.AddAsync(user, cancelToken);
             await _context.SaveChangesAsync(cancelToken);
+            return entityEntry.Entity;
         }
     }
 }

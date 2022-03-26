@@ -48,10 +48,11 @@ namespace Timesheets.DataBase.Repositories
                 return null;
             }
         }
-        public async Task AddAsync(Employee employee, CancellationToken cancelToken)
+        public async Task<Employee> CreateAsync(Employee employee, CancellationToken cancelToken)
         {
-            await _context.Employees.AddAsync(employee, cancelToken);
+            var entityEntry = await _context.Employees.AddAsync(employee, cancelToken);
             await _context.SaveChangesAsync(cancelToken);
+            return entityEntry.Entity;
         }
         public async Task UpdateAsync(Employee newEmployee, CancellationToken cancelToken)
         {

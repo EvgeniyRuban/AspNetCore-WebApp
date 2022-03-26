@@ -11,23 +11,68 @@ namespace Timesheets.Services
     public sealed class SheetsService : ISheetsService
     {
         private readonly ISheetsRepository _sheetsRepository;
+        private readonly IEmployeesRepository _employeesRepository;
+        private readonly IContractsRepository _contractsRepository;
+        private readonly IServicesRepository _servicesRepository;
+        private readonly IInvoicesRepository _invoicesRepository;
 
-        public SheetsService(ISheetsRepository repository)
+        public SheetsService(
+            ISheetsRepository sheetsRepository,
+            IEmployeesRepository employeesRepository,
+            IContractsRepository contractsRepository,
+            IServicesRepository servicesRepository,
+            IInvoicesRepository invoicesRepository)
         {
-            _sheetsRepository = repository;
+            _sheetsRepository = sheetsRepository;
+            _employeesRepository = employeesRepository;
+            _contractsRepository = contractsRepository;
+            _servicesRepository = servicesRepository;
+            _invoicesRepository = invoicesRepository;
         }
-        public async Task AddAsync(SheetRequest sheet, CancellationToken cancelToken)
+
+        public async Task<SheetResponse> CreateAsync(CreateSheetRequest request, CancellationToken cancelToken)
         {
-            var newSheet = new Sheet
+            if(request == null)
             {
-                Date = sheet.Date,
-                EmployeeId = sheet.EmployeeId,
-                ContractId = sheet.ContractId,
-                ServiceId = sheet.ServiceId,
-                InvoiceId = sheet.InvoiceId,
-                Amount = sheet.Amount,
+                return null;
+            }
+
+            var employee = await _employeesRepository.GetAsync(request.EmployeeId, cancelToken);
+            var contract = await _contractsRepository.GetAsync(request.ContractId, cancelToken);
+            var service = await _servicesRepository.GetAsync(request.ServiceId, cancelToken);
+            var invoice = await _invoicesRepository.GetAsync(request.InvoiceId, cancelToken);
+
+            if(employee is null ||
+               contract is null ||
+               service is null ||
+               invoice is null)
+            {
+                return null;
+            }
+            var sheet = new Sheet
+            {
+                Date = request.Date,
+                EmployeeId = request.EmployeeId,
+                ContractId = request.ContractId,
+                ServiceId = request.ServiceId,
+                InvoiceId = request.InvoiceId,
+                Amount = request.Amount,
             };
-            await _sheetsRepository.AddAsync(newSheet, cancelToken);
+            var newSheet = await _sheetsRepository.CreateAsync(sheet, cancelToken);
+
+            if(newSheet != null)
+            {
+                return new SheetResponse
+                {
+                    Id = newSheet.Id,
+                    EmployeeId = newSheet.EmployeeId,
+                    ContractId = newSheet.ContractId,
+                    ServiceId = newSheet.ServiceId,
+                    InvoiceId = newSheet.InvoiceId,
+                    Amount = newSheet.Amount,
+                };
+            }
+            return null;
         }
         public async Task<SheetResponse> GetAsync(int id, CancellationToken cancelToken)
         {
@@ -68,20 +113,40 @@ namespace Timesheets.Services
             }
             return sheetsCollection;
         }
-        public async Task UpdateAsync(CreateSheetRequest newSheet, CancellationToken cancelToken)
+        public async Task UpdateAsync(SheetRequest request, CancellationToken cancelToken)
         {
-            var sheetToUpdate = await _sheetsRepository.GetAsync(newSheet.Id, cancelToken);
+            if (request == null)
+            {
+                return;
+            }
+
+            var employee = await _employeesRepository.GetAsync(request.EmployeeId, cancelToken);
+            var contract = await _contractsRepository.GetAsync(request.ContractId, cancelToken);
+            var service = await _servicesRepository.GetAsync(request.ServiceId, cancelToken);
+            var invoice = await _invoicesRepository.GetAsync(request.InvoiceId, cancelToken);
+
+            if (employee is null ||
+               contract is null ||
+               service is null ||
+               invoice is null)
+            {
+                return;
+            }
+
+            var sheetToUpdate = await _sheetsRepository.GetAsync(request.Id, cancelToken);
+
             if(sheetToUpdate is null)
             {
                 return;
             }
+
             sheetToUpdate = new Sheet
             {
-                Date = newSheet.Date,
-                EmployeeId= newSheet.EmployeeId,
-                ServiceId= newSheet.ServiceId,
-                InvoiceId = newSheet.InvoiceId,
-                Amount = newSheet.Amount,
+                Date = request.Date,
+                EmployeeId = request.EmployeeId,
+                ServiceId = request.ServiceId,
+                InvoiceId = request.InvoiceId,
+                Amount = (int)request.Amount,
             };
             await _sheetsRepository.UpdateAsync(sheetToUpdate, cancelToken);
         }

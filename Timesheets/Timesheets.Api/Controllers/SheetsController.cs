@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -47,14 +46,14 @@ namespace Timesheets.Api.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<ActionResult> AddAsync([FromBody] SheetRequest request, CancellationToken cancelToken)
+        public async Task<ActionResult<SheetResponse>> CreateAsync([FromBody] CreateSheetRequest request, CancellationToken cancelToken)
         {
-            await _sheetsService.AddAsync(request, cancelToken);
-            return Ok();
+            var response = await _sheetsService.CreateAsync(request, cancelToken);
+            return Ok(response);
         }
 
         [HttpPut("update")]
-        public async Task<ActionResult> UpdateAsync(CreateSheetRequest request, CancellationToken cancelToken)
+        public async Task<ActionResult> UpdateAsync(SheetRequest request, CancellationToken cancelToken)
         {
             await _sheetsService.UpdateAsync(request,cancelToken);
             return Ok();
